@@ -13,15 +13,51 @@ dist/
 .venv/
 venv/
 env/
+ENV/
 
-# Tool caches
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*
+!.env.example
+secrets.json
+credentials.json
+
+# Local Data, Databases & Vector Stores (For Local RAG & LLMs)
+*.db
+*.sqlite
+*.sqlite3
+chroma_db/
+.chromadb/
+faiss_index/
+lancedb/
+data/
+datasets/
+
+# Local Model Weights / Large Binaries
+*.gguf
+*.bin
+*.onnx
+
+# Jupyter Notebooks (For prototyping/evaluation)
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Tool caches & Testing
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.cache/
 .coverage
 htmlcov/
+.tox/
+.nox/
 
 # IDE / OS files
 .vscode/
 .idea/
 .DS_Store
+Thumbs.db
+ehthumbs.db
+*.swp
+*.swo
