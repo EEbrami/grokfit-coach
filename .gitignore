@@ -31,8 +31,17 @@ chroma_db/
 .chromadb/
 faiss_index/
 lancedb/
+
+# data/ : allow committed seed data for RAG, ignore generated indexes/artifacts
 data/
-datasets/
+!data/seeds/
+!data/seeds/**/*
+.artifacts/
+var/
+indexes/
+data/indexes/
+*.faiss
+*.pkl  # often used by FAISS + docstore sidecars
 
 # Local Model Weights / Large Binaries
 *.gguf
