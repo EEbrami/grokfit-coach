@@ -88,7 +88,44 @@ data/seeds/          # committed curated exercises.json, foods.json, golden set
 tests/unit/          # pytest (models, safety, rag-fakes, tools, graph)
 ```
 
-The `ui/` directory from the original skeleton is untouched (Gradio UI is planned for a later phase).
+## Phase 2 Additions (Gradio UI + Persistence + Improved Plans)
+
+A clean Gradio web UI is now available on top of the Phase 1 agent:
+
+```bash
+# After install
+grokfit-coach-ui
+# or
+python -m grokfit_coach.ui.app
+```
+
+The UI has three tabs:
+- **Profile**: Form to view/edit your `UserProfile` (equipment, injuries, goals, etc.). Save persists locally.
+- **Coach Chat**: Real interactive chat with the local agent. Uses your saved profile automatically. All responses include safety guardrails + disclaimer.
+- **Plans**: View the last generated weekly workout plan or trigger a new one. Plans use improved Phase 2 logic (profile-aware RAG, constraint filtering, validation, and safe fallbacks).
+
+**Persistence**: Profiles and last plans are saved as JSON under `~/.grokfit/` by default. The terminal CLI now loads your persisted profile by default and auto-saves generated plans (usable by the UI Plans tab).
+
+The original terminal CLI (`grokfit-coach`) continues to work unchanged for headless/scripted use.
+
+## Project Layout (key pieces)
+
+```
+src/grokfit_coach/
+├── agents/          # LangGraph state, prompts, graph (the agent)
+├── config/          # pydantic-settings (Ollama host/model, paths)
+├── models/          # UserProfile, Exercise, FoodItem, WeeklyWorkoutPlan (all Pydantic v2)
+├── rag/             # ingest + retriever (FAISS) + retrieval_eval
+├── safety/          # guardrails (is_unsafe_request + forced disclaimer)
+├── tools/           # 3 LangChain @tools (search_exercises, lookup_nutrition, calculate_macros)
+├── cli.py           # thin terminal REPL / one-shot (unchanged, now with optional persistence)
+├── persistence.py   # local JSON save/load for profile + last plan (~/.grokfit/)
+└── ui/
+    └── app.py       # Gradio UI (Profile / Coach Chat / Plans tabs)
+
+data/seeds/          # committed curated exercises.json, foods.json, golden set
+tests/unit/          # pytest (models, safety, rag-fakes, tools, graph)
+```
 
 ## Development
 
@@ -96,11 +133,26 @@ The `ui/` directory from the original skeleton is untouched (Gradio UI is planne
 pytest tests/unit -q
 python -m grokfit_coach.evaluation.retrieval_eval
 python -m grokfit_coach.rag.ingest   # after editing seeds
+grokfit-coach-ui                     # launch the web UI (after `pip install -e .`)
 ```
 
 Type checking: the project has `[tool.pyright]` in pyproject.toml. Run `pyright src/grokfit_coach` (or your preferred checker).
 
-## Status & Limitations (Phase 1)
+## Status & Limitations
+
+**Phase 1 (terminal agent) + Phase 2 (UI + persistence + better plans) complete on this branch.**
+
+- Working conversational agent (terminal + now Gradio UI) with RAG + tools + strong safety guardrails.
+- Improved (but still LLM-assisted) weekly workout plan generation with better context, filtering, validation and fallbacks.
+- Basic local persistence for profile and last plan (`~/.grokfit/` JSON files).
+- Gradio UI with Profile / Coach Chat / Plans tabs. Fully local.
+- Terminal CLI (`grokfit-coach`) remains fully supported and is not broken.
+
+**Limitations**:
+- Plan quality still depends on the local LLM's ability to follow structured output and the prompt (improved but not perfect).
+- Small curated exercise set (easy to extend).
+- Persistence is simple file-based (no versioning or history beyond last plan).
+- No meal planning or advanced features yet.
 
 - Working conversational agent in the terminal with RAG + tools + safety.
 - Basic structured weekly workout plans (intentionally kept simple).

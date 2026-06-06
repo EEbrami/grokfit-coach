@@ -6,6 +6,9 @@ Usage examples:
     python -m grokfit_coach.cli
     python -m grokfit_coach.cli --query "Suggest chest exercises with dumbbells"
     grokfit-coach --profile data/seeds/example_profile.json --query "create a 3 day plan"
+
+Profile is loaded from persisted ~/.grokfit/profile.json by default (or EXAMPLE if none).
+Last generated plans are auto-saved to ~/.grokfit/last_plan.json for the Plans tab / --query flows.
 """
 
 from __future__ import annotations
@@ -18,18 +21,24 @@ from pathlib import Path
 from langchain_core.messages import HumanMessage
 
 from grokfit_coach.agents.graph import build_coach_graph
-from grokfit_coach.models import EXAMPLE_USER_PROFILE, UserProfile
+from grokfit_coach.models import UserProfile
+from grokfit_coach.persistence import get_current_profile, save_plan
 
 
-def load_profile(path: str | None) -> UserProfile:
+def load_profile_from_path(path: str | None) -> UserProfile:
+    """Load from explicit JSON path (for --profile override). Falls back to persisted or example."""
     if not path:
-        return EXAMPLE_USER_PROFILE
+        return get_current_profile()
     p = Path(path)
     if not p.exists():
-        print(f"Profile file not found: {path}. Using EXAMPLE_USER_PROFILE.", file=sys.stderr)
-        return EXAMPLE_USER_PROFILE
-    data = json.loads(p.read_text(encoding="utf-8"))
-    return UserProfile.model_validate(data)
+        print(f"Profile file not found: {path}. Falling back to persisted or example profile.", file=sys.stderr)
+        return get_current_profile()
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        return UserProfile.model_validate(data)
+    except Exception:
+        print(f"Failed to load profile from {path}. Falling back.", file=sys.stderr)
+        return get_current_profile()
 
 
 def format_plan(plan) -> str:
@@ -86,6 +95,10 @@ def run_repl(graph, profile: UserProfile) -> None:
 
         if state.get("plan"):
             print(format_plan(state["plan"]))
+            try:
+                save_plan(state["plan"])
+            except Exception:
+                pass
             # clear so we don't reprint on next turn unless newly generated
             state["plan"] = None
 
@@ -97,7 +110,7 @@ def main() -> None:
     parser.add_argument("--model", type=str, default=None, help="Override Ollama model (advanced)")
     args = parser.parse_args()
 
-    profile = load_profile(args.profile)
+    profile = load_profile_from_path(args.profile)
     graph = build_coach_graph()
 
     if args.query:
@@ -120,6 +133,10 @@ def main() -> None:
             print(getattr(last, "content", str(last)))
         if out.get("plan"):
             print(format_plan(out["plan"]))
+            try:
+                save_plan(out["plan"])
+            except Exception:
+                pass  # non-fatal
         return
 
     # Interactive REPL (the main Phase 1 experience)

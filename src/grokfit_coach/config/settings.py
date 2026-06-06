@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     seeds_dir: Path = Path(__file__).resolve().parents[3] / "data" / "seeds"
     index_dir: Path = Path(__file__).resolve().parents[3] / "data" / "indexes"
 
+    # User data / persistence (Phase 2 - local JSON files)
+    user_data_dir: Path = Path.home() / ".grokfit"
+    profile_path: Path = Path.home() / ".grokfit" / "profile.json"
+    last_plan_path: Path = Path.home() / ".grokfit" / "last_plan.json"
+
     model_config = SettingsConfigDict(
         env_prefix="GROKFIT_",
         env_file=".env",
@@ -48,3 +53,9 @@ def ensure_data_dirs(settings: Settings | None = None) -> None:
     s = settings or get_settings()
     s.seeds_dir.mkdir(parents=True, exist_ok=True)
     s.index_dir.mkdir(parents=True, exist_ok=True)
+
+
+def ensure_user_data_dirs(settings: Settings | None = None) -> None:
+    """Ensure the user data directory for persistence (profile/plan JSON) exists."""
+    s = settings or get_settings()
+    s.user_data_dir.mkdir(parents=True, exist_ok=True)

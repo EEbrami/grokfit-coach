@@ -13,7 +13,7 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
-from grokfit_coach.agents.prompts import SYSTEM_PROMPT
+from grokfit_coach.agents.prompts import PLAN_GENERATION_PROMPT, SYSTEM_PROMPT
 from grokfit_coach.agents.state import AgentState
 from grokfit_coach.config.settings import get_settings
 from grokfit_coach.models import UserProfile, WeeklyWorkoutPlan
@@ -101,17 +101,19 @@ def should_use_tools(state: AgentState) -> Literal["tools", "maybe_plan", "respo
 
 
 def maybe_generate_plan(state: AgentState) -> AgentState:
-    """Basic structured plan path (intentionally simple for Phase 1).
+    """Improved plan generation for Phase 2.
 
-    If the user asked for a plan, we do a quick RAG lookup for suitable exercises
-    and ask the LLM for a structured WeeklyWorkoutPlan using with_structured_output.
-    This is "basic" on purpose.
+    - Uses profile-aware RAG retrieval + client-side filtering for equipment/injuries.
+    - Richer prompt with explicit rules (from PLAN_GENERATION_PROMPT).
+    - Post-validation: keeps only exercises whose names are in the retrieved set.
+    - Robust fallback: if LLM fails or produces invalid plan, builds a safe deterministic
+      plan by distributing the filtered retrieved exercises across the requested days.
     """
     profile: UserProfile | None = state.get("profile")
     if not profile:
         return state
 
-    # Quick relevant exercises from RAG (using the last user query if possible)
+    # Get context from conversation or default
     last_query = ""
     for m in reversed(state.get("messages", [])):
         if isinstance(m, HumanMessage):
@@ -120,32 +122,91 @@ def maybe_generate_plan(state: AgentState) -> AgentState:
 
     from grokfit_coach.rag.retriever import retrieve_exercises
 
-    relevant = retrieve_exercises(last_query or "full body beginner", k=6)
-    ex_names = [ex.name for ex in relevant]
+    # Retrieve more candidates
+    candidates = retrieve_exercises(last_query or "balanced full body workout", k=10)
+
+    # Client-side filter for basic compatibility (equipment + avoid obvious injury aggravators)
+    user_equip = set(e.lower() for e in (profile.available_equipment or []))
+    injury_keywords = [kw.lower() for kw in (profile.injuries_or_limitations or [])]
+
+    filtered = []
+    for ex in candidates:
+        ex_equip = set(e.lower() for e in (ex.equipment or []))
+        # Allow if user has the gear OR the exercise is bodyweight/none
+        compatible_equip = bool(user_equip & ex_equip) or not ex_equip or "none" in ex_equip or "bodyweight" in ex_equip
+        # Crude injury avoidance (real safety is in guardrails + prompt)
+        aggravates = any(kw in " ".join((ex.contraindications or []) + [ex.description]).lower() for kw in injury_keywords)
+        if compatible_equip and not aggravates:
+            filtered.append(ex)
+
+    if not filtered:
+        filtered = candidates[:6]  # fallback to whatever we got
+
+    ex_names = [ex.name for ex in filtered]
+    ex_list_str = "\n".join(f"- {ex.name}: {ex.description[:80]} (equip: {', '.join(ex.equipment or ['bodyweight'])})" for ex in filtered)
 
     llm = _get_llm()
     structured_llm = llm.with_structured_output(WeeklyWorkoutPlan)
 
-    prompt = (
-        f"Create a simple {profile.workout_days_per_week}-day weekly workout plan "
-        f"for {profile.name} (goal: {profile.goal}, level: {profile.fitness_level}). "
-        f"Available equipment: {profile.available_equipment or 'bodyweight/minimal'}. "
-        f"Respect any injuries: {profile.injuries_or_limitations}. "
-        f"Use only exercises from this list when possible: {ex_names}. "
-        f"Keep it realistic and safe. Output a valid WeeklyWorkoutPlan."
+    prompt = PLAN_GENERATION_PROMPT.format(
+        workout_days_per_week=profile.workout_days_per_week,
+        fitness_level=profile.fitness_level,
+        goal=profile.goal,
+        name=profile.name,
+        available_equipment=profile.available_equipment or "bodyweight / minimal",
+        injuries_or_limitations=profile.injuries_or_limitations or "none",
+        session_duration_min=profile.session_duration_min,
+        exercise_list=ex_list_str,
     )
 
+    plan: WeeklyWorkoutPlan | None = None
     try:
-        plan: WeeklyWorkoutPlan = structured_llm.invoke([HumanMessage(content=prompt)])
-        # ensure disclaimer
-        if not plan.disclaimer or "IMPORTANT" not in plan.disclaimer:
-            from grokfit_coach.safety.guardrails import DISCLAIMER
-
-            plan.disclaimer = DISCLAIMER
-        state["plan"] = plan
+        candidate_plan: WeeklyWorkoutPlan = structured_llm.invoke([HumanMessage(content=prompt)])
+        # Post-validation: keep only exercises that were in our filtered list
+        valid_names = set(ex_names)
+        cleaned_days = []
+        for day in candidate_plan.days:
+            cleaned_exs = [ex for ex in day.exercises if ex.name in valid_names]
+            if cleaned_exs:
+                cleaned_days.append(type(day)(day=day.day, focus=day.focus, exercises=cleaned_exs))
+        if cleaned_days:
+            plan = WeeklyWorkoutPlan(
+                athlete_name=candidate_plan.athlete_name or profile.name,
+                goal=candidate_plan.goal or profile.goal,
+                days=cleaned_days,
+                notes=candidate_plan.notes or "",
+                disclaimer=candidate_plan.disclaimer,
+            )
     except Exception:
-        # If structured output fails on the local model, we still let the normal respond path run
-        state["plan"] = None
+        plan = None
+
+    if plan is None or not plan.days:
+        # Deterministic safe fallback using retrieved exercises
+        days = []
+        per_day = max(3, min(6, len(filtered) // max(1, profile.workout_days_per_week)))
+        for i in range(profile.workout_days_per_week):
+            start = (i * per_day) % len(filtered)
+            day_exs = filtered[start : start + per_day]
+            if not day_exs:
+                day_exs = filtered[:per_day]
+            ex_prescriptions = [
+                type("ExercisePrescription", (), {"name": ex.name, "sets": "3", "reps": "8-12", "notes": ex.cues[:60] if ex.cues else None})()
+                for ex in day_exs
+            ]
+            days.append(type("WorkoutDay", (), {"day": f"Day {i+1}", "focus": "Full body / balanced", "exercises": ex_prescriptions})())
+        plan = WeeklyWorkoutPlan(
+            athlete_name=profile.name,
+            goal=profile.goal,
+            days=days,
+            notes="Fallback plan generated from available knowledge base exercises. Adjust as needed.",
+        )
+
+    # Final disclaimer enforcement
+    from grokfit_coach.safety.guardrails import DISCLAIMER
+    if not plan.disclaimer or "IMPORTANT" not in plan.disclaimer:
+        plan.disclaimer = DISCLAIMER
+
+    state["plan"] = plan
     return state
 
 

@@ -12,3 +12,4 @@ langchain-ollama>=0.2.0
 ollama>=0.3.0
 faiss-cpu>=1.8.0
 sentence-transformers>=3.0.0
+gradio>=4.0

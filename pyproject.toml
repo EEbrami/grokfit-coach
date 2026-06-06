@@ -33,6 +33,7 @@ dependencies = [
     "ollama>=0.3.0",
     "faiss-cpu>=1.8.0",
     "sentence-transformers>=3.0.0",
+    "gradio>=4.0",
 ]
 
 [project.optional-dependencies]
@@ -43,6 +44,7 @@ dev = [
 
 [project.scripts]
 grokfit-coach = "grokfit_coach.cli:main"
+grokfit-coach-ui = "grokfit_coach.ui.app:launch"
 
 [tool.setuptools.packages.find]
 where = ["src"]
