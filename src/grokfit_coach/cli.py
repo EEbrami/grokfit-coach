@@ -41,6 +41,30 @@ def load_profile_from_path(path: str | None) -> UserProfile:
         return get_current_profile()
 
 
+def _apply_llm_overrides(profile: UserProfile, args) -> UserProfile:
+    """Apply --provider/--model/--api-key-env overrides to the profile and warn as needed."""
+    from grokfit_coach.llm import egress_warning, plan_capability_warning
+
+    updates: dict = {}
+    if getattr(args, "provider", None):
+        updates["provider"] = args.provider
+    if getattr(args, "model", None):
+        updates["model"] = args.model
+    if getattr(args, "api_key_env", None):
+        updates["api_key_ref"] = args.api_key_env
+    if updates:
+        new_cfg = profile.llm_config.model_copy(update=updates)
+        profile = profile.model_copy(update={"llm_config": new_cfg})
+
+    warn = egress_warning(profile.llm_config)
+    if warn:
+        print(f"\n⚠️  {warn}\n", file=sys.stderr)
+    cap = plan_capability_warning(profile.llm_config)
+    if cap:
+        print(f"Note: {cap}", file=sys.stderr)
+    return profile
+
+
 def format_plan(plan) -> str:
     if not plan:
         return ""
@@ -107,10 +131,24 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="GrokFit Coach - local terminal agent")
     parser.add_argument("--profile", type=str, default=None, help="Path to a UserProfile JSON file")
     parser.add_argument("--query", type=str, default=None, help="Single query (non-interactive)")
-    parser.add_argument("--model", type=str, default=None, help="Override Ollama model (advanced)")
+    parser.add_argument("--model", type=str, default=None, help="Override the LLM model id (e.g. qwen2.5, llama3.1)")
+    parser.add_argument(
+        "--provider",
+        type=str,
+        default=None,
+        help="LLM provider: ollama (default, local) | google_genai | groq | openai | anthropic | mistralai | openrouter",
+    )
+    parser.add_argument(
+        "--api-key-env",
+        type=str,
+        default=None,
+        dest="api_key_env",
+        help="Name of the ENV VAR holding your API key (cloud providers only; the key is never stored)",
+    )
     args = parser.parse_args()
 
     profile = load_profile_from_path(args.profile)
+    profile = _apply_llm_overrides(profile, args)
     graph = build_coach_graph()
 
     if args.query:

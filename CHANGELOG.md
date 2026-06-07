@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Phase 3 roadmap** (`PHASE_3_PLAN.md`): intake-driven dual workout+nutrition coaching, open nutrition DB (USDA FoodData Central), longitudinal tracking, and multi-LLM support (local + opt-in API).
 - **GitHub Actions CI** (`.github/workflows/ci.yml`): ruff + pytest on Python 3.11/3.12 for pushes and PRs to `main`.
+- **Phase 3 / M2 — multi-LLM provider layer:**
+  - `llm/factory.py`: `get_chat_model(profile)` returns a LangChain chat model from the profile's `LLMConfig` — local Ollama by default, optional cloud via `init_chat_model` (lazy-imported, opt-in `[cloud]` extras).
+  - Data-egress warning whenever a non-local provider is used; API keys resolved from an **env var / OS keyring**, never stored in the profile/DB.
+  - Tool-reliability gating: curated local menu (default `qwen2.5`; `llama3.1`, `gemma4`, etc.), with weak models (Gemma 2/3, Phi, sub-7B, low quants) flagged for the plan path; `resolve_default_local_model` auto-detects already-pulled models.
+  - Wired into the agent graph (provider-driven chat + plan generation), CLI (`--provider`/`--model`/`--api-key-env`), and the Gradio Profile tab (provider/model/API-key fields).
+  - `pyproject` `[cloud]` optional extras (google-genai, groq, openai, anthropic, mistralai, keyring). Hermetic `tests/unit/test_llm_factory.py`.
 - **Phase 3 / M1 — data-model spine & SQLite storage:**
   - SQLite storage layer (`storage/db.py`): versioned `profiles`, append-only timestamped `events` log, timestamped `plans` (kind = workout/nutrition); auto-migrates legacy `profile.json`/`last_plan.json`.
   - Expanded `UserProfile`: `dietary_pattern`, `food_preferences`, `disliked_foods`, `allergens` (safety-critical), `meals_per_day`, `cooking_effort`, `activity_level`, nested `llm_config`, `profile_version`.

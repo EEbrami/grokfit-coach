@@ -34,11 +34,21 @@ def _profile_to_form_values(profile: UserProfile) -> dict:
         "injuries_or_limitations": profile.injuries_or_limitations or [],
         "workout_days_per_week": profile.workout_days_per_week,
         "session_duration_min": profile.session_duration_min,
+        "llm_provider": profile.llm_config.provider,
+        "llm_model": profile.llm_config.model,
+        "llm_api_key_ref": profile.llm_config.api_key_ref or "",
     }
 
 
 def _form_values_to_profile(values: dict) -> UserProfile:
     """Build and validate a UserProfile from form values."""
+    from grokfit_coach.models import LLMConfig
+
+    llm_config = LLMConfig(
+        provider=values.get("llm_provider") or "ollama",
+        model=values.get("llm_model") or "llama3.1",
+        api_key_ref=(values.get("llm_api_key_ref") or None),
+    )
     return UserProfile(
         name=values.get("name", "User"),
         age=int(values.get("age", 30)),
@@ -52,6 +62,7 @@ def _form_values_to_profile(values: dict) -> UserProfile:
         injuries_or_limitations=values.get("injuries_or_limitations", []),
         workout_days_per_week=int(values.get("workout_days_per_week", 3)),
         session_duration_min=int(values.get("session_duration_min", 45)),
+        llm_config=llm_config,
     )
 
 
@@ -68,12 +79,22 @@ def save_profile_from_form(*args) -> tuple[dict | None, str]:
         "goal", "fitness_level", "available_equipment",
         "dietary_restrictions", "injuries_or_limitations",
         "workout_days_per_week", "session_duration_min",
+        "llm_provider", "llm_model", "llm_api_key_ref",
     ]
     values = dict(zip(keys, args))
     try:
         profile = _form_values_to_profile(values)
         save_profile(profile)
-        return _profile_to_form_values(profile), f"✅ Profile saved for {profile.name}. Available in chat and plan generation."
+        from grokfit_coach.llm import egress_warning, plan_capability_warning
+
+        extra = ""
+        warn = egress_warning(profile.llm_config)
+        if warn:
+            extra += f"\n⚠️ {warn}"
+        cap = plan_capability_warning(profile.llm_config)
+        if cap:
+            extra += f"\nNote: {cap}"
+        return _profile_to_form_values(profile), f"✅ Profile saved for {profile.name}. Available in chat and plan generation.{extra}"
     except Exception as e:
         return None, f"❌ Failed to save profile: {e}"
 
@@ -196,6 +217,30 @@ def launch():
                 days = gr.Slider(1, 7, step=1, label="Training Days / Week", value=4)
                 duration = gr.Slider(20, 120, step=5, label="Typical Session (minutes)", value=50)
 
+            gr.Markdown("### Model (LLM) — local by default")
+            with gr.Row():
+                llm_provider = gr.Dropdown(
+                    ["ollama", "google_genai", "groq", "openai", "anthropic", "mistralai", "openrouter"],
+                    label="Provider (ollama = 100% local)",
+                    value="ollama",
+                )
+                llm_model = gr.Dropdown(
+                    ["qwen2.5", "qwen2.5:14b", "llama3.1", "qwen3", "qwen3.5", "gemma4", "mistral-nemo"],
+                    label="Model",
+                    value="llama3.1",
+                    allow_custom_value=True,
+                )
+            llm_api_key_ref = gr.Textbox(
+                label="API key ENV VAR name (cloud only; the key itself is never stored)",
+                placeholder="e.g. GEMINI_API_KEY",
+                value="",
+            )
+            gr.Markdown(
+                "_Local **ollama** keeps everything on your device. Choosing a **cloud** provider sends your "
+                "messages (profile, injuries, dietary info) off-device — opt-in only. Recommended local models for "
+                "reliable plans: **qwen2.5**, **llama3.1**, **gemma4** (Gemma 2/3 are too weak for plans)._"
+            )
+
             with gr.Row():
                 load_btn = gr.Button("Load Saved Profile")
                 save_btn = gr.Button("Save Profile", variant="primary")
@@ -213,7 +258,7 @@ def launch():
 
             save_btn.click(
                 save_profile_from_form,
-                inputs=[name, age, gender, height, weight, goal, fitness, equipment, restrictions, injuries, days, duration],
+                inputs=[name, age, gender, height, weight, goal, fitness, equipment, restrictions, injuries, days, duration, llm_provider, llm_model, llm_api_key_ref],
                 outputs=[profile_state, status],
             )
 
