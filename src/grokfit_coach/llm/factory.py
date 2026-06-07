@@ -140,26 +140,52 @@ def resolve_api_key(api_key_ref: str | None) -> str | None:
 # --------------------------------------------------------------------------- #
 # Default local model (auto-detect already-pulled models, else configured default)
 # --------------------------------------------------------------------------- #
+def installed_ollama_models(settings: Any | None = None) -> list[str]:
+    """Return the list of locally-installed Ollama model names (empty if Ollama unreachable)."""
+    s = settings or get_settings()
+    try:
+        import json as _json
+        import urllib.request
+
+        with urllib.request.urlopen(f"{s.ollama_host}/api/tags", timeout=1.0) as resp:  # noqa: S310
+            payload = _json.loads(resp.read())
+        return [m.get("name", "") for m in payload.get("models", [])]
+    except Exception:
+        return []
+
+
 def resolve_default_local_model(settings: Any | None = None) -> str:
     """Pick the best already-installed tool-reliable Ollama model, else the configured default.
 
     Best-effort and fully offline-safe: if Ollama isn't reachable, returns settings.ollama_model.
     """
     s = settings or get_settings()
-    try:
-        import json as _json
-        import urllib.request
-
-        with urllib.request.urlopen(f"{s.ollama_host}/api/tags", timeout=1.5) as resp:  # noqa: S310
-            payload = _json.loads(resp.read())
-        installed = [m.get("name", "") for m in payload.get("models", [])]
-        for cand in (m["model"] for m in RECOMMENDED_LOCAL_MODELS):
-            for inst in installed:
-                if inst == cand or inst.startswith(cand + ":"):
-                    return cand
-    except Exception:
-        pass
+    installed = installed_ollama_models(s)
+    for cand in (m["model"] for m in RECOMMENDED_LOCAL_MODELS):
+        for inst in installed:
+            if inst == cand or inst.startswith(cand + ":"):
+                return cand
     return s.ollama_model
+
+
+def ensure_local_available(model: str, settings: Any | None = None) -> str:
+    """Return ``model`` if installed, else fall back to the best installed model (avoids 404s).
+
+    If Ollama is unreachable we can't verify, so we return the request unchanged and let it try.
+    """
+    s = settings or get_settings()
+    installed = installed_ollama_models(s)
+    if not installed:
+        return model
+    base = model.split(":", 1)[0]
+    if any(name == model or name.split(":", 1)[0] == base for name in installed):
+        return model
+    # requested model not installed -> prefer a tool-reliable installed model, else any installed
+    for rec in RECOMMENDED_LOCAL_MODELS:
+        rb = rec["model"].split(":", 1)[0]
+        if any(name.split(":", 1)[0] == rb for name in installed):
+            return rec["model"]
+    return installed[0].split(":", 1)[0]
 
 
 # --------------------------------------------------------------------------- #
@@ -186,7 +212,14 @@ def get_chat_model(
     if config.is_local:
         from langchain_ollama import ChatOllama
 
-        model = config.model or resolve_default_local_model(s)
+        requested = config.model or resolve_default_local_model(s)
+        model = ensure_local_available(requested, s)
+        if model != requested:
+            warnings.warn(
+                f"Ollama model '{requested}' is not installed; using '{model}' instead. "
+                f"Run `ollama pull {requested}` to use your chosen model.",
+                stacklevel=2,
+            )
         # Construction does not open a connection; failures surface at .invoke() time.
         return ChatOllama(model=model, base_url=s.ollama_host, temperature=temp)
 

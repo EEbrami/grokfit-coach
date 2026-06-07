@@ -321,3 +321,18 @@ def invoke_coach(
         "safety_refusal": None,
     }
     return graph.invoke(init)
+
+
+def generate_workout_plan(profile: UserProfile) -> WeeklyWorkoutPlan | None:
+    """Generate a workout plan directly and robustly.
+
+    Runs only the plan node (with its deterministic fallback), bypassing the conversational
+    chat node — so a missing or failing local model never blocks plan generation.
+    """
+    state: AgentState = {
+        "messages": [HumanMessage(content="Create a weekly workout plan based on my profile.")],
+        "profile": profile,
+        "plan": None,
+        "safety_refusal": None,
+    }
+    return maybe_generate_plan(state).get("plan")

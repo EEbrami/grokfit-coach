@@ -22,6 +22,7 @@ from grokfit_coach.safety.guardrails import DISCLAIMER
 
 _ACTIVITY_MULT = {"sedentary": 1.2, "light": 1.375, "moderate": 1.55, "active": 1.725, "very": 1.9}
 _CALORIE_FLOOR = 1200  # safety floor — never prescribe an aggressive/crash deficit
+_DENSE_KCAL = 500  # kcal/100g threshold: calorie-dense foods (nuts, oils, nut butters) get tiny portions
 
 _MEAL_NAMES = ["Breakfast", "Lunch", "Dinner", "Snack", "Second Snack", "Pre-Workout", "Post-Workout", "Evening Snack"]
 
@@ -66,6 +67,13 @@ def _pick(items: list[FoodItem], idx: int) -> FoodItem | None:
     return items[idx % len(items)] if items else None
 
 
+def _portion_grams(food: FoodItem, role: str) -> float:
+    """Sensible serving size (grams) by role; calorie-dense foods get a small topping portion."""
+    if food.calories >= _DENSE_KCAL:
+        return 15.0
+    return {"protein": 150.0, "carb": 110.0, "veg": 150.0}.get(role, 100.0)
+
+
 def _choice(item: FoodItem, grams: float) -> FoodChoice:
     m = food_db.macros_for_grams(item, grams)
     return FoodChoice(
@@ -84,25 +92,31 @@ def generate_nutrition_plan(profile: UserProfile, db_path=None) -> NutritionPlan
     )
     safe = _bias_by_preferences(safe, profile)
 
-    proteins = [f for f in safe if f.protein_g >= 15]
-    carbs = [f for f in safe if f.carbs_g >= 15]
-    veg_fruit = [f for f in safe if f.calories <= 100 and f.carbs_g < 25] or safe
+    # Calorie-dense foods (nuts, oils, nut butters) are used as small toppings, not mains.
+    dense = [f for f in safe if f.calories >= _DENSE_KCAL]
+    proteins = [f for f in safe if f.protein_g >= 15 and f.calories < _DENSE_KCAL]
+    carbs = [f for f in safe if f.carbs_g >= 15 and f.calories < _DENSE_KCAL]
+    veg_fruit = [f for f in safe if f.calories <= 100 and f.carbs_g < 25]
+    # graceful fallbacks if a bucket is empty (e.g. restrictive diet)
+    proteins = proteins or [f for f in safe if f.protein_g >= 8] or safe
+    carbs = carbs or [f for f in safe if f.carbs_g >= 10] or safe
+    veg_fruit = veg_fruit or safe
 
     n_meals = max(1, min(profile.meals_per_day, 6))
     meals: list[Meal] = []
-    pi = ci = vi = 0
     for i in range(n_meals):
         items: list[FoodChoice] = []
-        p = _pick(proteins, pi)
-        c = _pick(carbs, ci)
-        v = _pick(veg_fruit, vi)
-        pi, ci, vi = pi + 1, ci + 1, vi + 1
-        if p:
-            items.append(_choice(p, 150))
-        if c and (not p or c.name != p.name):
-            items.append(_choice(c, 120))
-        if v and v.name not in {it.name for it in items}:
-            items.append(_choice(v, 150))
+        used: set[str] = set()
+        for role, source in (("protein", proteins), ("carb", carbs), ("veg", veg_fruit)):
+            food = _pick(source, i)
+            if food and food.name not in used:
+                items.append(_choice(food, _portion_grams(food, role)))
+                used.add(food.name)
+        # round out fats/flavor with a small portion of a calorie-dense food, when available
+        ex = _pick(dense, i)
+        if ex and ex.name not in used:
+            items.append(_choice(ex, _portion_grams(ex, "extra")))
+            used.add(ex.name)
         if items:
             meals.append(Meal(name=_MEAL_NAMES[i] if i < len(_MEAL_NAMES) else f"Meal {i+1}", items=items))
 

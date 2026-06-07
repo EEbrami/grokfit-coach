@@ -208,16 +208,19 @@ def generate_plan(profile_state: dict | None):
     sections: list[str] = []
     done: list[str] = []
 
-    # --- Workout plan (robust assembly via the agent graph) ---
+    # --- Workout plan (robust: deterministic fallback even if the LLM is unavailable) ---
     try:
-        result = invoke_coach(profile, "Please create a weekly workout plan for me based on my profile.")
-        wplan = result.get("plan")
-        if wplan:
+        from grokfit_coach.agents.graph import generate_workout_plan
+
+        wplan = generate_workout_plan(profile)
+        if wplan and wplan.days:
             save_plan(wplan)
             sections.append("## 🏋️ Workout Plan\n" + _format_plan_for_chat(wplan))
             done.append("workout ✓")
+        else:
+            sections.append("## 🏋️ Workout Plan\n_Could not build a plan — check your equipment selection._")
     except Exception as e:
-        sections.append(f"## 🏋️ Workout Plan\n_Error: {e} (is Ollama running?)_")
+        sections.append(f"## 🏋️ Workout Plan\n_Error: {e}_")
 
     # --- Nutrition plan (deterministic, allergen-safe, grounded in the food DB) ---
     try:

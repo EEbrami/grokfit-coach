@@ -33,6 +33,20 @@ def test_nutrition_plan_respects_allergens_and_diet(tmp_path):
     assert items and all(it.calories is not None for it in items)
 
 
+def test_nutrition_portions_are_sane(tmp_path):
+    """No single food item should be an absurd calorie bomb (the 150g-almonds bug)."""
+    db = tmp_path / "n.sqlite"
+    food_db.build_from_seed(db_path=db)
+    profile = EXAMPLE_USER_PROFILE.model_copy(
+        update={"allergens": [], "dietary_pattern": "omnivore", "meals_per_day": 3}
+    )
+    plan = meal_planner.generate_nutrition_plan(profile, db_path=db)
+    items = [it for d in plan.days for m in d.meals for it in m.items]
+    assert items
+    offenders = [(it.name, it.calories) for it in items if (it.calories or 0) > 600]
+    assert not offenders, f"calorie-bomb portions: {offenders}"
+
+
 def test_nutrition_plan_vegan_excludes_animal_products(tmp_path):
     db = tmp_path / "n.sqlite"
     food_db.build_from_seed(db_path=db)
