@@ -57,15 +57,15 @@ class UserProfile(BaseModel):
 
 # Convenience example for demos, tests, and the terminal CLI
 EXAMPLE_USER_PROFILE = UserProfile(
-    name="Alex Rivera",
-    age=34,
+    name="Abraham",
+    age=30,
     gender="male",
     height_cm=178.0,
-    weight_kg=82.0,
+    weight_kg=93.0,
     goal="fat_loss",
     fitness_level="intermediate",
     available_equipment=["dumbbells", "none", "resistance_bands"],
-    dietary_restrictions=["none"],
+    dietary_restrictions=[],
     injuries_or_limitations=[],
     workout_days_per_week=4,
     session_duration_min=50,

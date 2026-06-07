@@ -169,12 +169,12 @@ def launch():
         with gr.Tab("Profile"):
             gr.Markdown("### Edit & Save Your Profile\nChanges are persisted locally and used by Chat and Plans.")
             with gr.Row():
-                name = gr.Textbox(label="Name", value="Alex Rivera")
-                age = gr.Number(label="Age", value=34, precision=0)
+                name = gr.Textbox(label="Name", value="Abraham")
+                age = gr.Number(label="Age", value=30, precision=0)
                 gender = gr.Dropdown(["male", "female", "other", "prefer_not"], label="Gender", value="male")
             with gr.Row():
                 height = gr.Number(label="Height (cm)", value=178)
-                weight = gr.Number(label="Weight (kg)", value=82)
+                weight = gr.Number(label="Weight (kg)", value=93)
             goal = gr.Dropdown(
                 ["fat_loss", "muscle_gain", "strength", "general_health", "endurance", "body_recomposition"],
                 label="Primary Goal",
