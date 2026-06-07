@@ -1,0 +1,11 @@
+[
+  {"query": "dumbbell chest press beginner", "relevant_ids": ["ex_003", "ex_002"]},
+  {"query": "bodyweight core exercise", "relevant_ids": ["ex_008", "ex_009"]},
+  {"query": "dumbbell leg exercise", "relevant_ids": ["ex_002", "ex_010"]},
+  {"query": "resistance band back", "relevant_ids": ["ex_007"]},
+  {"query": "beginner push up variation", "relevant_ids": ["ex_001"]},
+  {"query": "dumbbell row back exercise", "relevant_ids": ["ex_004"]},
+  {"query": "shoulder press with dumbbells", "relevant_ids": ["ex_005"]},
+  {"query": "hamstring glute dumbbell", "relevant_ids": ["ex_006", "ex_009"]},
+  {"query": "unilateral leg dumbbell", "relevant_ids": ["ex_010", "ex_002"]}
+]

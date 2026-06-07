@@ -41,6 +41,16 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.5",
 ]
+# Optional, opt-in cloud LLM providers. Base install stays 100% local (Ollama only).
+# Enable with:  pip install "grokfit-coach[cloud]"
+cloud = [
+    "langchain-google-genai>=2.0",
+    "langchain-groq>=0.2",
+    "langchain-openai>=0.2",
+    "langchain-anthropic>=0.2",
+    "langchain-mistralai>=0.2",
+    "keyring>=25.0",
+]
 
 [project.scripts]
 grokfit-coach = "grokfit_coach.cli:main"

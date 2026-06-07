@@ -1,67 +1,72 @@
-"""Basic local JSON persistence for user profile and last generated plan.
+"""Local persistence facade for user profile and plans.
 
-All data stays on the user's machine ( ~/.grokfit/ by default ).
-Uses Pydantic for (de)serialization. Graceful handling of missing/invalid files.
+Phase 3: backed by SQLite (``grokfit_coach.storage.db``) instead of single JSON files.
+- Profiles are versioned (a new snapshot per save) and every save logs an 'intake' event.
+- Plans are timestamped by kind ('workout' | 'nutrition').
+- Legacy ``~/.grokfit/profile.json`` / ``last_plan.json`` are migrated automatically on first use.
+
+The public function names/signatures are unchanged so the CLI and Gradio UI keep working.
+All data stays on the user's machine.
 """
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from grokfit_coach.config.settings import ensure_user_data_dirs, get_settings
-from grokfit_coach.models import EXAMPLE_USER_PROFILE, UserProfile, WeeklyWorkoutPlan
+from grokfit_coach.models import EXAMPLE_USER_PROFILE, NutritionPlan, UserProfile, WeeklyWorkoutPlan
+from grokfit_coach.storage import db
 
 
 def _ensure_dirs() -> None:
     ensure_user_data_dirs()
 
 
+# --------------------------------------------------------------------------- #
+# Profile
+# --------------------------------------------------------------------------- #
 def save_profile(profile: UserProfile) -> Path:
-    """Save the given profile to the configured JSON path. Returns the path."""
+    """Save a new versioned profile snapshot (+ intake event). Returns the DB path."""
     _ensure_dirs()
-    settings = get_settings()
-    path = settings.profile_path
-    path.write_text(profile.model_dump_json(indent=2), encoding="utf-8")
-    return path
+    db.save_profile(profile)
+    return get_settings().db_path
 
 
 def load_profile() -> UserProfile:
-    """Load profile from disk if present and valid; otherwise return EXAMPLE_USER_PROFILE."""
-    settings = get_settings()
-    path = settings.profile_path
-    if not path.exists():
-        return EXAMPLE_USER_PROFILE
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return UserProfile.model_validate(data)
-    except Exception:
-        # Corrupt or incompatible file -> fall back safely
-        return EXAMPLE_USER_PROFILE
-
-
-def save_plan(plan: WeeklyWorkoutPlan) -> Path:
-    """Save the last generated plan to disk. Returns the path."""
-    _ensure_dirs()
-    settings = get_settings()
-    path = settings.last_plan_path
-    path.write_text(plan.model_dump_json(indent=2), encoding="utf-8")
-    return path
-
-
-def load_plan() -> WeeklyWorkoutPlan | None:
-    """Load the last saved plan if present and valid; otherwise None."""
-    settings = get_settings()
-    path = settings.last_plan_path
-    if not path.exists():
-        return None
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return WeeklyWorkoutPlan.model_validate(data)
-    except Exception:
-        return None
+    """Load the latest profile, or fall back to the example profile."""
+    profile = db.load_latest_profile()
+    return profile if profile is not None else EXAMPLE_USER_PROFILE
 
 
 def get_current_profile() -> UserProfile:
-    """Convenience: load persisted profile or fall back to example."""
+    """Convenience: latest persisted profile or the example fallback."""
     return load_profile()
+
+
+# --------------------------------------------------------------------------- #
+# Plans
+# --------------------------------------------------------------------------- #
+def save_plan(plan: WeeklyWorkoutPlan) -> Path:
+    """Save a timestamped workout plan. Returns the DB path."""
+    _ensure_dirs()
+    db.save_plan("workout", plan)
+    return get_settings().db_path
+
+
+def load_plan() -> WeeklyWorkoutPlan | None:
+    """Load the most recent workout plan, if any."""
+    plan = db.load_latest_plan("workout")
+    return plan if isinstance(plan, WeeklyWorkoutPlan) else None
+
+
+def save_nutrition_plan(plan: NutritionPlan) -> Path:
+    """Save a timestamped nutrition plan. Returns the DB path."""
+    _ensure_dirs()
+    db.save_plan("nutrition", plan)
+    return get_settings().db_path
+
+
+def load_nutrition_plan() -> NutritionPlan | None:
+    """Load the most recent nutrition plan, if any."""
+    plan = db.load_latest_plan("nutrition")
+    return plan if isinstance(plan, NutritionPlan) else None

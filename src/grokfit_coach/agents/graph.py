@@ -9,13 +9,12 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_ollama import ChatOllama
 from langgraph.graph import END, StateGraph
 from langgraph.prebuilt import ToolNode
 
 from grokfit_coach.agents.prompts import PLAN_GENERATION_PROMPT, SYSTEM_PROMPT
 from grokfit_coach.agents.state import AgentState
-from grokfit_coach.config.settings import get_settings
+from grokfit_coach.llm import get_chat_model
 from grokfit_coach.models import (
     ExercisePrescription,
     UserProfile,
@@ -30,8 +29,8 @@ from grokfit_coach.tools import TOOLS
 
 
 def _get_llm(settings: Any | None = None):
-    s = settings or get_settings()
-    return ChatOllama(model=s.ollama_model, base_url=s.ollama_host, temperature=0.2)
+    """Backward-compatible wrapper around the provider factory (local Ollama by default)."""
+    return get_chat_model(None, settings)
 
 
 def safety_preflight(state: AgentState) -> AgentState:
@@ -79,7 +78,7 @@ def call_model(state: AgentState) -> AgentState:
         # Short-circuit; the refusal node will handle output
         return state
 
-    llm = _get_llm()
+    llm = get_chat_model(state.get("profile"))
     llm_with_tools = llm.bind_tools(TOOLS)
 
     messages = state["messages"]
@@ -150,7 +149,7 @@ def maybe_generate_plan(state: AgentState) -> AgentState:
     ex_names = [ex.name for ex in filtered]
     ex_list_str = "\n".join(f"- {ex.name}: {ex.description[:80]} (equip: {', '.join(ex.equipment or ['bodyweight'])})" for ex in filtered)
 
-    llm = _get_llm()
+    llm = get_chat_model(profile)
     structured_llm = llm.with_structured_output(WeeklyWorkoutPlan)
 
     prompt = PLAN_GENERATION_PROMPT.format(
