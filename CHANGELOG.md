@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hermetic unit test `test_maybe_generate_plan_fallback` to verify agent's plan fallback path.
 
 ### Fixed
+- **Gradio 6 compatibility**: the Coach Chat tab now uses the messages format (list of `{role, content}` dicts) required by Gradio 6 (the old tuple format and the `Chatbot(type=...)` arg were removed). Added hermetic `tests/unit/test_ui_chat.py`. The app now launches and chats correctly on Gradio 6.16.
 - Pydantic ValidationError in agent fallback path (`maybe_generate_plan`) by importing and using actual `WorkoutDay` and `ExercisePrescription` models instead of dynamic classes constructed with `type()`.
 - Gradio UI Chatbot crash by removing `type="messages"` from `gr.Chatbot` to match callback history's tuple format.
 - Cleaned up Ruff linting errors (unused imports, sorting, unused variables) across the package.

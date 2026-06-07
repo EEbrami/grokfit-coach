@@ -126,10 +126,16 @@ def chat_response(message: str, history: list, profile_state: dict | None):
         if DISCLAIMER not in assistant_msg:
             assistant_msg = assistant_msg.rstrip() + "\n\n" + DISCLAIMER
 
-        history = history + [(message, assistant_msg)]
+        history = history + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": assistant_msg},
+        ]
     except Exception as e:
         error_msg = f"Error contacting the local agent: {e}. Is Ollama running with the right model?"
-        history = history + [(message, error_msg)]
+        history = history + [
+            {"role": "user", "content": message},
+            {"role": "assistant", "content": error_msg},
+        ]
 
     return history, profile_state
 
