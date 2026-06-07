@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Phase 3 roadmap** (`PHASE_3_PLAN.md`): intake-driven dual workout+nutrition coaching, open nutrition DB (USDA FoodData Central), longitudinal tracking, and multi-LLM support (local + opt-in API).
 - **GitHub Actions CI** (`.github/workflows/ci.yml`): ruff + pytest on Python 3.11/3.12 for pushes and PRs to `main`.
+- **Phase 3 / M3 — nutrition data backbone (open food→nutrient DB):**
+  - Local SQLite nutrition DB (`nutrition/food_db.py`): per-100g macros, portions, and structured allergen/diet tables; auto-built from a committed seed (`data/seeds/nutrition/seed_foods.json`, ~18 USDA-derived generic foods) so it works offline out of the box.
+  - **Fail-closed allergen filtering** + dietary-pattern filtering done in pure SQL (never embeddings); a food passes only if positively known free of every listed allergen; user allergen synonyms normalized (e.g. dairy→milk, gluten→wheat, nuts→tree_nut).
+  - Full **USDA FoodData Central CSV ingest** (`nutrition/ingest_fdc.py`, CC0 data) deriving allergen/diet flags from a curated keyword map (`data/seeds/nutrition/allergen_diet_map.json`); runnable via `python -m grokfit_coach.nutrition.ingest_fdc <dir>` (download is a documented manual step; degrades gracefully offline).
+  - `lookup_nutrition` tool now queries the grounded DB (curated fallback retained).
+  - Hermetic `tests/unit/test_nutrition_db.py` (seed build, search, fail-closed exclusion incl. unknown foods, synonyms, vegan filter, CSV ingest).
 - **Phase 3 / M2 — multi-LLM provider layer:**
   - `llm/factory.py`: `get_chat_model(profile)` returns a LangChain chat model from the profile's `LLMConfig` — local Ollama by default, optional cloud via `init_chat_model` (lazy-imported, opt-in `[cloud]` extras).
   - Data-egress warning whenever a non-local provider is used; API keys resolved from an **env var / OS keyring**, never stored in the profile/DB.

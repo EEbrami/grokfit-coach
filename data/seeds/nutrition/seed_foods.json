@@ -1,0 +1,26 @@
+{
+  "_comment": "Offline-default nutrition seed. USDA FoodData Central is CC0/public domain; these are approximate per-100g generic-food values for out-of-the-box use. Replace/augment by ingesting a full FDC download (see grokfit_coach.nutrition.ingest_fdc).",
+  "dataset": "grokfit-seed (USDA FDC-derived approximations)",
+  "version": "seed-2026.06",
+  "basis": "per_100g",
+  "foods": [
+    {"fdc_id": 900001, "description": "Chicken breast, cooked, skinless", "data_type": "seed", "calories": 165, "protein_g": 31.0, "carbs_g": 0.0, "fat_g": 3.6, "allergens": [], "diet": [], "portions": [{"grams": 120, "description": "1 small breast"}, {"grams": 85, "description": "3 oz"}]},
+    {"fdc_id": 900002, "description": "Egg, whole, cooked", "data_type": "seed", "calories": 155, "protein_g": 13.0, "carbs_g": 1.1, "fat_g": 11.0, "allergens": ["egg"], "diet": ["vegetarian"], "portions": [{"grams": 50, "description": "1 large egg"}]},
+    {"fdc_id": 900003, "description": "Oats, rolled, dry", "data_type": "seed", "calories": 389, "protein_g": 16.9, "carbs_g": 66.3, "fat_g": 6.9, "allergens": [], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 40, "description": "1/2 cup dry"}]},
+    {"fdc_id": 900004, "description": "Rice, white, cooked", "data_type": "seed", "calories": 130, "protein_g": 2.7, "carbs_g": 28.2, "fat_g": 0.3, "allergens": [], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 158, "description": "1 cup cooked"}]},
+    {"fdc_id": 900005, "description": "Broccoli, cooked", "data_type": "seed", "calories": 35, "protein_g": 2.4, "carbs_g": 7.2, "fat_g": 0.4, "allergens": [], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 156, "description": "1 cup chopped"}]},
+    {"fdc_id": 900006, "description": "Banana, raw", "data_type": "seed", "calories": 89, "protein_g": 1.1, "carbs_g": 22.8, "fat_g": 0.3, "allergens": [], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 118, "description": "1 medium banana"}]},
+    {"fdc_id": 900007, "description": "Almonds, raw", "data_type": "seed", "calories": 579, "protein_g": 21.2, "carbs_g": 21.6, "fat_g": 49.9, "allergens": ["tree_nut"], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 28, "description": "1 oz (~23 almonds)"}]},
+    {"fdc_id": 900008, "description": "Salmon, Atlantic, cooked", "data_type": "seed", "calories": 206, "protein_g": 22.1, "carbs_g": 0.0, "fat_g": 12.4, "allergens": ["fish"], "diet": ["pescatarian"], "portions": [{"grams": 85, "description": "3 oz fillet"}]},
+    {"fdc_id": 900009, "description": "Greek yogurt, plain, nonfat", "data_type": "seed", "calories": 59, "protein_g": 10.2, "carbs_g": 3.6, "fat_g": 0.4, "allergens": ["milk"], "diet": ["vegetarian"], "portions": [{"grams": 170, "description": "1 container (6 oz)"}]},
+    {"fdc_id": 900010, "description": "Milk, reduced fat, 2%", "data_type": "seed", "calories": 50, "protein_g": 3.4, "carbs_g": 4.8, "fat_g": 2.0, "allergens": ["milk"], "diet": ["vegetarian"], "portions": [{"grams": 244, "description": "1 cup"}]},
+    {"fdc_id": 900011, "description": "Bread, whole wheat", "data_type": "seed", "calories": 247, "protein_g": 13.0, "carbs_g": 41.0, "fat_g": 3.4, "allergens": ["wheat"], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 28, "description": "1 slice"}]},
+    {"fdc_id": 900012, "description": "Peanut butter, smooth", "data_type": "seed", "calories": 588, "protein_g": 25.1, "carbs_g": 19.6, "fat_g": 50.4, "allergens": ["peanut"], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 32, "description": "2 tbsp"}]},
+    {"fdc_id": 900013, "description": "Olive oil, extra virgin", "data_type": "seed", "calories": 884, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 100.0, "allergens": [], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 13.5, "description": "1 tbsp"}]},
+    {"fdc_id": 900014, "description": "Lentils, cooked", "data_type": "seed", "calories": 116, "protein_g": 9.0, "carbs_g": 20.1, "fat_g": 0.4, "allergens": [], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 198, "description": "1 cup cooked"}]},
+    {"fdc_id": 900015, "description": "Beef, ground, 85% lean, cooked", "data_type": "seed", "calories": 250, "protein_g": 26.0, "carbs_g": 0.0, "fat_g": 15.0, "allergens": [], "diet": [], "portions": [{"grams": 85, "description": "3 oz"}]},
+    {"fdc_id": 900016, "description": "Sweet potato, baked", "data_type": "seed", "calories": 90, "protein_g": 2.0, "carbs_g": 20.7, "fat_g": 0.1, "allergens": [], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 130, "description": "1 medium"}]},
+    {"fdc_id": 900017, "description": "Tofu, firm", "data_type": "seed", "calories": 144, "protein_g": 17.3, "carbs_g": 2.8, "fat_g": 8.7, "allergens": ["soy"], "diet": ["vegan", "vegetarian"], "portions": [{"grams": 126, "description": "1/2 block"}]},
+    {"fdc_id": 900018, "description": "Shrimp, cooked", "data_type": "seed", "calories": 99, "protein_g": 24.0, "carbs_g": 0.2, "fat_g": 0.3, "allergens": ["shellfish"], "diet": ["pescatarian"], "portions": [{"grams": 85, "description": "3 oz"}]}
+  ]
+}

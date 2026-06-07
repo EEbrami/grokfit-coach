@@ -21,25 +21,38 @@ def _load_foods() -> list[FoodItem]:
 
 @tool("lookup_nutrition", return_direct=False)
 def lookup_nutrition(food_query: str) -> str:
-    """Look up approximate nutrition information for a common food.
+    """Look up nutrition information (per 100 g) for a common food.
 
     Use when the user asks about protein, calories, or macros for specific foods
-    (chicken, eggs, oats, yogurt, etc.). The data is a small curated set for demo purposes.
+    (chicken, eggs, oats, yogurt, etc.). Data comes from the local nutrition database
+    (USDA FoodData Central-derived); falls back to a small curated set if unavailable.
     """
-    foods = _load_foods()
-    q = food_query.lower()
-    matches = [f for f in foods if q in f.name.lower()]
+    matches: list = []
+    try:
+        from grokfit_coach.nutrition import food_db
+
+        matches = food_db.search_foods(food_query, limit=3)
+    except Exception:
+        matches = []
+
     if not matches:
-        # fallback: return top 3 by rough relevance (first 3)
-        matches = foods[:3]
+        # fallback to the small curated list
+        foods = _load_foods()
+        q = food_query.lower()
+        matches = [f for f in foods if q in f.name.lower()][:3] or foods[:3]
 
     lines = []
     for f in matches[:3]:
+        allergens = getattr(f, "allergen_flags", None) or []
+        allergen_note = f" [allergens: {', '.join(allergens)}]" if allergens else ""
         lines.append(
             f"{f.name} ({f.serving_desc}): ~{f.calories:.0f} kcal, "
-            f"P {f.protein_g:.1f}g / C {f.carbs_g:.1f}g / F {f.fat_g:.1f}g"
+            f"P {f.protein_g:.1f}g / C {f.carbs_g:.1f}g / F {f.fat_g:.1f}g{allergen_note}"
         )
-    return "Approximate nutrition (curated data, for general guidance only):\n" + "\n".join(lines)
+    return (
+        "Approximate per-100g nutrition (USDA FoodData Central-derived; general guidance only):\n"
+        + "\n".join(lines)
+    )
 
 
 @tool("calculate_macros", return_direct=False)
