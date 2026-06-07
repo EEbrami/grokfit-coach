@@ -195,6 +195,21 @@ def _format_nutrition_plan_for_display(plan) -> str:
     return "\n".join(lines)
 
 
+def _write_plan_markdown(content: str, name: str) -> str:
+    """Write the combined plan markdown to a downloadable .md file and return its path."""
+    from datetime import datetime
+
+    from grokfit_coach.config.settings import get_settings
+
+    safe = "".join(c if c.isalnum() else "_" for c in (name or "plan")).strip("_") or "plan"
+    export_dir = get_settings().user_data_dir / "exports"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    path = export_dir / f"grokfit_plan_{safe}.md"
+    header = f"# GrokFit Coach — Plan for {name}\n\n_Generated {datetime.now().strftime('%Y-%m-%d %H:%M')}_\n\n"
+    path.write_text(header + content + "\n", encoding="utf-8")
+    return str(path)
+
+
 def generate_plan(profile_state: dict | None):
     """Generate BOTH a workout plan and a nutrition plan from the current profile."""
     if profile_state:
@@ -235,9 +250,14 @@ def generate_plan(profile_state: dict | None):
         sections.append(f"\n\n---\n\n## 🥗 Nutrition Plan\n_Error: {e}_")
 
     if not sections:
-        return "No plan produced. Check your profile and that Ollama is running.", "Nothing generated."
+        return "No plan produced. Check your profile and that Ollama is running.", "Nothing generated.", None
+    md = "\n".join(sections)
     status = f"Generated for {profile.name}: {', '.join(done)}." if done else "Generation had errors (see above)."
-    return "\n".join(sections), status
+    try:
+        filepath = _write_plan_markdown(md, profile.name)
+    except Exception:
+        filepath = None
+    return md, status, filepath
 
 
 def launch():
@@ -373,11 +393,12 @@ def launch():
             plan_display = gr.Markdown("No plan generated yet. Click the button below.")
             gen_btn = gr.Button("Generate / Regenerate My Plans", variant="primary")
             plan_status = gr.Textbox(label="Status", interactive=False)
+            plan_file = gr.File(label="⬇️ Download your plan (.md)", interactive=False)
 
             gen_btn.click(
                 generate_plan,
                 inputs=[profile_state],
-                outputs=[plan_display, plan_status],
+                outputs=[plan_display, plan_status, plan_file],
             )
 
             # Load last saved plans (workout + nutrition) on tab load
@@ -392,10 +413,16 @@ def launch():
                 if nplan:
                     parts.append("\n\n---\n\n## 🥗 Nutrition Plan\n" + _format_nutrition_plan_for_display(nplan))
                 if parts:
-                    return "\n".join(parts), "Loaded your last saved plans."
-                return "No saved plan found. Click Generate to create one.", ""
+                    md = "\n".join(parts)
+                    name = get_current_profile().name
+                    try:
+                        fp = _write_plan_markdown(md, name)
+                    except Exception:
+                        fp = None
+                    return md, "Loaded your last saved plans.", fp
+                return "No saved plan found. Click Generate to create one.", "", None
 
-            demo.load(_load_last_plan, outputs=[plan_display, plan_status], queue=False)
+            demo.load(_load_last_plan, outputs=[plan_display, plan_status, plan_file], queue=False)
 
         gr.Markdown("---\n*Everything runs locally with Ollama. Your data never leaves your machine.*")
 
