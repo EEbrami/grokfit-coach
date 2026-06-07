@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 3 / M4 — intake-driven dual plan generation (workout + nutrition):**
+  - **Nutrition plan generation** (`nutrition/meal_planner.py`): deterministic, reproducible meal plans built ONLY from foods that pass the fail-closed allergen + dietary-pattern filter; Mifflin-St Jeor macro targets with a calorie floor; respects food preferences/dislikes. Shown in the Plans tab alongside the workout plan and persisted.
+  - **Robust workout plan generation**: rewrote `maybe_generate_plan` to guarantee a full plan — exactly `workout_days_per_week` days, each filled to ~5 exercises from the equipment/injury-filtered pool, with fuzzy name matching (LLM used for day structure, never trusted for completeness) and goal-based sets/reps. Fixes the "1 day / 1 exercise" collapse.
+  - **Exercise database expanded 10 → 33** across all major muscle groups and equipment types (bodyweight, dumbbell, barbell, bands, pull-up bar, machines/cables, cardio) for real plan variety.
+  - **Profile tab now captures nutrition inputs**: dietary pattern, **allergens** (safety-critical), preferred/disliked foods, meals per day — and fixes the form round-trip so saving never silently wipes allergens.
+  - Tests: `test_meal_planner.py`, `test_ui_profile.py`, and a hermetic workout day-fill test.
 - **Phase 3 roadmap** (`PHASE_3_PLAN.md`): intake-driven dual workout+nutrition coaching, open nutrition DB (USDA FoodData Central), longitudinal tracking, and multi-LLM support (local + opt-in API).
 - **GitHub Actions CI** (`.github/workflows/ci.yml`): ruff + pytest on Python 3.11/3.12 for pushes and PRs to `main`.
 - **Phase 3 / M3 — nutrition data backbone (open food→nutrient DB):**

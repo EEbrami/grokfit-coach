@@ -98,5 +98,235 @@
     "difficulty": "intermediate",
     "contraindications": ["knee pain"],
     "cues": "Front knee tracks over ankle, upright torso, controlled depth."
+  },
+  {
+    "id": "ex_011",
+    "name": "Bodyweight Squat",
+    "description": "Foundational air squat building lower-body strength with no equipment.",
+    "muscle_groups": ["quads", "glutes", "hamstrings"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": ["knee pain"],
+    "cues": "Feet shoulder-width, sit hips back, knees track over toes, chest tall."
+  },
+  {
+    "id": "ex_012",
+    "name": "Walking Lunge",
+    "description": "Alternating forward lunges that train legs and balance using bodyweight.",
+    "muscle_groups": ["quads", "glutes", "hamstrings"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "novice",
+    "contraindications": ["knee pain"],
+    "cues": "Step long, drop back knee toward floor, push through front heel, stay upright."
+  },
+  {
+    "id": "ex_013",
+    "name": "Mountain Climber",
+    "description": "Dynamic plank with alternating knee drives for core and conditioning.",
+    "muscle_groups": ["core", "shoulders", "quads"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": ["wrist pain"],
+    "cues": "Shoulders over wrists, flat back, drive knees quickly without bouncing hips."
+  },
+  {
+    "id": "ex_014",
+    "name": "Burpee",
+    "description": "Full-body conditioning move combining a squat, plank and jump.",
+    "muscle_groups": ["chest", "quads", "core", "shoulders"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "intermediate",
+    "contraindications": ["wrist pain", "knee pain", "heart condition"],
+    "cues": "Hands down, jump back to plank, jump in, then explode up tall."
+  },
+  {
+    "id": "ex_015",
+    "name": "Bicycle Crunch",
+    "description": "Rotational crunch targeting the abs and obliques.",
+    "muscle_groups": ["core", "abs", "obliques"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": ["neck pain", "lower back pain"],
+    "cues": "Rotate from the torso, opposite elbow to knee, keep lower back pressed down."
+  },
+  {
+    "id": "ex_016",
+    "name": "Pike Push-up",
+    "description": "Inverted push-up that shifts load to the shoulders for a vertical press pattern.",
+    "muscle_groups": ["shoulders", "triceps", "core"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "intermediate",
+    "contraindications": ["shoulder impingement", "wrist pain"],
+    "cues": "Hips high in an A-shape, lower crown of head toward floor, elbows tracking back."
+  },
+  {
+    "id": "ex_017",
+    "name": "Superman",
+    "description": "Prone back extension strengthening the lower back and glutes.",
+    "muscle_groups": ["lower back", "glutes", "back"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": ["lower back pain"],
+    "cues": "Lift arms and legs together, squeeze glutes, keep neck neutral, no jerking."
+  },
+  {
+    "id": "ex_018",
+    "name": "Standing Calf Raise",
+    "description": "Bodyweight heel raise that builds the calves and ankle strength.",
+    "muscle_groups": ["calves"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": ["achilles tendon injury"],
+    "cues": "Rise onto the balls of the feet, full pause at the top, lower slowly under control."
+  },
+  {
+    "id": "ex_019",
+    "name": "Pull-up",
+    "description": "Overhand vertical pull for back, lats and biceps using a bar.",
+    "muscle_groups": ["back", "lats", "biceps"],
+    "equipment": ["pullup_bar", "bodyweight"],
+    "difficulty": "advanced",
+    "contraindications": ["shoulder pain", "elbow pain"],
+    "cues": "Start from a dead hang, pull chest to bar, control the descent fully."
+  },
+  {
+    "id": "ex_020",
+    "name": "Chin-up",
+    "description": "Underhand vertical pull emphasizing the biceps and lats.",
+    "muscle_groups": ["biceps", "lats", "back"],
+    "equipment": ["pullup_bar", "bodyweight"],
+    "difficulty": "intermediate",
+    "contraindications": ["elbow pain", "shoulder pain"],
+    "cues": "Supinated grip, lead with the chest, squeeze biceps at top, no swinging."
+  },
+  {
+    "id": "ex_021",
+    "name": "Hanging Leg Raise",
+    "description": "Hanging core movement that targets the lower abs and hip flexors.",
+    "muscle_groups": ["abs", "core"],
+    "equipment": ["pullup_bar", "bodyweight"],
+    "difficulty": "advanced",
+    "contraindications": ["lower back pain", "shoulder pain"],
+    "cues": "Avoid swinging, raise legs with control, posteriorly tilt the pelvis at the top."
+  },
+  {
+    "id": "ex_022",
+    "name": "Barbell Back Squat",
+    "description": "Barbell squat with the bar on the upper back, a foundational leg builder.",
+    "muscle_groups": ["quads", "glutes", "hamstrings", "core"],
+    "equipment": ["barbells", "full_gym"],
+    "difficulty": "intermediate",
+    "contraindications": ["knee pain", "lower back pain"],
+    "cues": "Brace the core, break at hips and knees, drive through midfoot, knees out."
+  },
+  {
+    "id": "ex_023",
+    "name": "Barbell Deadlift",
+    "description": "Hip-hinge pull lifting a loaded barbell from the floor for total posterior chain strength.",
+    "muscle_groups": ["hamstrings", "glutes", "lower back", "back"],
+    "equipment": ["barbells", "full_gym"],
+    "difficulty": "advanced",
+    "contraindications": ["lower back pain", "herniated disc"],
+    "cues": "Flat back, bar over midfoot, push the floor away, lock out with glutes."
+  },
+  {
+    "id": "ex_024",
+    "name": "Barbell Bench Press",
+    "description": "Flat barbell press, the primary horizontal pushing strength movement for the chest.",
+    "muscle_groups": ["chest", "triceps", "shoulders"],
+    "equipment": ["barbells", "bench", "full_gym"],
+    "difficulty": "intermediate",
+    "contraindications": ["shoulder pain", "shoulder impingement"],
+    "cues": "Retract shoulder blades, lower to mid-chest, drive feet, controlled tempo, use a spotter."
+  },
+  {
+    "id": "ex_025",
+    "name": "Barbell Bent-Over Row",
+    "description": "Bent-over barbell row that builds the mid-back, lats and biceps.",
+    "muscle_groups": ["back", "lats", "biceps"],
+    "equipment": ["barbells", "full_gym"],
+    "difficulty": "intermediate",
+    "contraindications": ["lower back pain"],
+    "cues": "Hinge to about 45 degrees, flat back, pull to lower ribs, squeeze the blades."
+  },
+  {
+    "id": "ex_026",
+    "name": "Barbell Overhead Press",
+    "description": "Standing barbell press overhead developing shoulder and triceps strength.",
+    "muscle_groups": ["shoulders", "triceps", "core"],
+    "equipment": ["barbells", "full_gym"],
+    "difficulty": "intermediate",
+    "contraindications": ["shoulder impingement", "lower back pain"],
+    "cues": "Brace the core, keep ribs down, press the bar in a straight line, finish overhead."
+  },
+  {
+    "id": "ex_027",
+    "name": "Dumbbell Bicep Curl",
+    "description": "Standing dumbbell curl isolating the biceps.",
+    "muscle_groups": ["biceps"],
+    "equipment": ["dumbbells"],
+    "difficulty": "beginner",
+    "contraindications": ["elbow pain"],
+    "cues": "Keep elbows pinned to the sides, curl without swinging, lower under control."
+  },
+  {
+    "id": "ex_028",
+    "name": "Dumbbell Lateral Raise",
+    "description": "Standing raise to the side that isolates the lateral deltoids for shoulder width.",
+    "muscle_groups": ["shoulders"],
+    "equipment": ["dumbbells"],
+    "difficulty": "beginner",
+    "contraindications": ["shoulder impingement"],
+    "cues": "Slight elbow bend, lead with the elbows, raise to shoulder height, no shrugging."
+  },
+  {
+    "id": "ex_029",
+    "name": "Resistance Band Pull-Apart",
+    "description": "Horizontal band pull that strengthens the upper back and rear delts for posture.",
+    "muscle_groups": ["upper back", "rear delts", "shoulders"],
+    "equipment": ["resistance_bands"],
+    "difficulty": "beginner",
+    "contraindications": [],
+    "cues": "Arms straight at chest height, pull the band apart, squeeze the shoulder blades together."
+  },
+  {
+    "id": "ex_030",
+    "name": "Lat Pulldown",
+    "description": "Cable machine vertical pull that targets the lats and upper back.",
+    "muscle_groups": ["lats", "back", "biceps"],
+    "equipment": ["cable", "full_gym"],
+    "difficulty": "beginner",
+    "contraindications": ["shoulder pain"],
+    "cues": "Tall chest, pull the bar to the upper chest, drive the elbows down, control the return."
+  },
+  {
+    "id": "ex_031",
+    "name": "Cable Tricep Pushdown",
+    "description": "Cable extension that isolates the triceps.",
+    "muscle_groups": ["triceps"],
+    "equipment": ["cable", "full_gym"],
+    "difficulty": "beginner",
+    "contraindications": ["elbow pain"],
+    "cues": "Elbows pinned to the sides, extend fully to lockout, resist on the way up."
+  },
+  {
+    "id": "ex_032",
+    "name": "Treadmill Interval Run",
+    "description": "Alternating hard and easy running bouts on a treadmill for fat loss and endurance.",
+    "muscle_groups": ["quads", "hamstrings", "calves", "glutes"],
+    "equipment": ["cardio_machine"],
+    "difficulty": "intermediate",
+    "contraindications": ["knee pain", "heart condition"],
+    "cues": "Warm up first, drive arms, land midfoot, recover at an easy pace between sprints."
+  },
+  {
+    "id": "ex_033",
+    "name": "Rowing Machine",
+    "description": "Full-body cardio on an erg that drives legs, back and arms for endurance and fat loss.",
+    "muscle_groups": ["back", "legs", "core", "biceps"],
+    "equipment": ["cardio_machine"],
+    "difficulty": "novice",
+    "contraindications": ["lower back pain"],
+    "cues": "Sequence legs then hips then arms, keep a flat back, return arms then hips then legs."
   }
 ]
