@@ -1,0 +1,16 @@
+{
+  "_comment": "Curated keyword -> (allergens, diet) map. USDA generic foods have NO allergen field, so we derive flags from the description. SAFETY: matching marks a food allergen_known=1; foods that match NO rule stay allergen_known=0 (UNKNOWN) and are excluded from allergy-restricted plans (fail closed). Order matters: first matching rule wins; put specific/allergen rules before generic plant rules.",
+  "rules": [
+    {"match": ["egg", "omelet", "mayonnaise"], "allergens": ["egg"], "diet": ["vegetarian"]},
+    {"match": ["milk", "yogurt", "yoghurt", "cheese", "butter", "cream", "whey", "casein", "custard", "ghee"], "allergens": ["milk"], "diet": ["vegetarian"]},
+    {"match": ["almond", "walnut", "cashew", "pecan", "pistachio", "hazelnut", "macadamia", "brazil nut"], "allergens": ["tree_nut"], "diet": ["vegan", "vegetarian"]},
+    {"match": ["peanut"], "allergens": ["peanut"], "diet": ["vegan", "vegetarian"]},
+    {"match": ["shrimp", "prawn", "crab", "lobster", "shellfish", "clam", "oyster", "scallop", "mussel"], "allergens": ["shellfish"], "diet": ["pescatarian"]},
+    {"match": ["salmon", "tuna", "cod", "fish", "sardine", "trout", "halibut", "tilapia", "anchovy", "mackerel"], "allergens": ["fish"], "diet": ["pescatarian"]},
+    {"match": ["soy", "tofu", "edamame", "tempeh", "miso"], "allergens": ["soy"], "diet": ["vegan", "vegetarian"]},
+    {"match": ["sesame", "tahini"], "allergens": ["sesame"], "diet": ["vegan", "vegetarian"]},
+    {"match": ["wheat", "bread", "pasta", "flour", "cracker", "cereal", "noodle", "couscous", "barley", "rye"], "allergens": ["wheat"], "diet": ["vegan", "vegetarian"]},
+    {"match": ["chicken", "turkey", "beef", "pork", "lamb", "bacon", "ham", "sausage", "veal", "duck"], "allergens": [], "diet": []},
+    {"match": ["oat", "rice", "quinoa", "broccoli", "spinach", "kale", "banana", "apple", "berry", "orange", "lentil", "bean", "chickpea", "potato", "carrot", "tomato", "onion", "pepper", "cucumber", "lettuce", "avocado", "olive oil", "vegetable", "fruit", "corn", "pea", "mushroom"], "allergens": [], "diet": ["vegan", "vegetarian"]}
+  ]
+}
