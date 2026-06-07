@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `"body_recomposition"` training goal option to models, macro calculation tool, and Gradio UI.
+- Unit tests verifying model validation and macro calculations for the new body recomposition goal.
 - Hermetic unit test `test_maybe_generate_plan_fallback` to verify agent's plan fallback path.
 
 ### Fixed

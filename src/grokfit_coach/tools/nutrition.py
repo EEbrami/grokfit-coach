@@ -76,6 +76,10 @@ def calculate_macros(
         target = tdee - 400
         protein_g = weight_kg * 2.0
         note = "Modest deficit for fat loss."
+    elif goal == "body_recomposition":
+        target = tdee - 150
+        protein_g = weight_kg * 2.2
+        note = "Slight deficit with high protein for simultaneous muscle gain and fat loss."
     elif goal in ("muscle_gain", "strength"):
         target = tdee + 300
         protein_g = weight_kg * 1.8

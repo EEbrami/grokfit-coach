@@ -176,7 +176,7 @@ def launch():
                 height = gr.Number(label="Height (cm)", value=178)
                 weight = gr.Number(label="Weight (kg)", value=82)
             goal = gr.Dropdown(
-                ["fat_loss", "muscle_gain", "strength", "general_health", "endurance"],
+                ["fat_loss", "muscle_gain", "strength", "general_health", "endurance", "body_recomposition"],
                 label="Primary Goal",
                 value="fat_loss",
             )

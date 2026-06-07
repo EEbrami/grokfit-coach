@@ -15,6 +15,23 @@ def test_calculate_macros_pure_function():
     assert "Protein" in out or "protein" in out.lower()
 
 
+def test_calculate_macros_recomposition():
+    out = calculate_macros.invoke(
+        {
+            "age": 30,
+            "gender": "male",
+            "weight_kg": 80,
+            "height_cm": 180,
+            "activity_level": "moderate",
+            "goal": "body_recomposition",
+        }
+    )
+    assert "kcal" in out
+    assert "Protein" in out or "protein" in out.lower()
+    assert "simultaneous muscle gain" in out
+
+
+
 def test_lookup_nutrition_uses_curated_data():
     out = lookup_nutrition.invoke({"food_query": "chicken"})
     assert "Chicken" in out

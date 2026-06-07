@@ -20,7 +20,7 @@ def test_example_profile_is_valid():
     p = EXAMPLE_USER_PROFILE
     assert p.name
     assert p.age >= 13
-    assert p.goal in {"fat_loss", "muscle_gain", "strength", "general_health", "endurance"}
+    assert p.goal in {"fat_loss", "muscle_gain", "strength", "general_health", "endurance", "body_recomposition"}
 
 
 def test_user_profile_validation_errors():

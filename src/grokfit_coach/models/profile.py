@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-Goal = Literal["fat_loss", "muscle_gain", "strength", "general_health", "endurance"]
+Goal = Literal["fat_loss", "muscle_gain", "strength", "general_health", "endurance", "body_recomposition"]
 FitnessLevel = Literal["beginner", "novice", "intermediate", "advanced"]
 
 
