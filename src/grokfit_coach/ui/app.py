@@ -61,8 +61,8 @@ def load_saved_profile() -> tuple[dict, str]:
     return _profile_to_form_values(profile), f"Loaded profile for {profile.name} (persisted or default)."
 
 
-def save_profile_from_form(*args) -> str:
-    """Validate form, save to persistence, return status."""
+def save_profile_from_form(*args) -> tuple[dict | None, str]:
+    """Validate form, save to persistence, return profile state + status."""
     keys = [
         "name", "age", "gender", "height_cm", "weight_kg",
         "goal", "fitness_level", "available_equipment",
@@ -73,9 +73,9 @@ def save_profile_from_form(*args) -> str:
     try:
         profile = _form_values_to_profile(values)
         save_profile(profile)
-        return f"✅ Profile saved for {profile.name}. Available in chat and plan generation."
+        return _profile_to_form_values(profile), f"✅ Profile saved for {profile.name}. Available in chat and plan generation."
     except Exception as e:
-        return f"❌ Failed to save profile: {e}"
+        return None, f"❌ Failed to save profile: {e}"
 
 
 def chat_response(message: str, history: list, profile_state: dict | None):
@@ -214,7 +214,7 @@ def launch():
             save_btn.click(
                 save_profile_from_form,
                 inputs=[name, age, gender, height, weight, goal, fitness, equipment, restrictions, injuries, days, duration],
-                outputs=[status],
+                outputs=[profile_state, status],
             )
 
             # Initialize on load
