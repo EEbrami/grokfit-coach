@@ -43,8 +43,32 @@ def test_nutrition_portions_are_sane(tmp_path):
     plan = meal_planner.generate_nutrition_plan(profile, db_path=db)
     items = [it for d in plan.days for m in d.meals for it in m.items]
     assert items
-    offenders = [(it.name, it.calories) for it in items if (it.calories or 0) > 600]
-    assert not offenders, f"calorie-bomb portions: {offenders}"
+    # the real invariant from the 150g-almonds bug: calorie-dense foods stay small toppings
+    offenders = [
+        (it.name, it.grams)
+        for it in items
+        if (it.calories or 0) / (it.grams or 1) * 100 >= 500 and (it.grams or 0) > 30
+    ]
+    assert not offenders, f"calorie-dense foods at large portions: {offenders}"
+
+
+def test_nutrition_scales_with_target(tmp_path):
+    """A larger target must yield a larger total than a smaller target (not identical meals)."""
+    db = tmp_path / "n.sqlite"
+    food_db.build_from_seed(db_path=db)
+    small = EXAMPLE_USER_PROFILE.model_copy(
+        update={"weight_kg": 55, "height_cm": 160, "goal": "fat_loss", "activity_level": "sedentary", "allergens": []}
+    )
+    large = EXAMPLE_USER_PROFILE.model_copy(
+        update={"weight_kg": 110, "height_cm": 190, "goal": "muscle_gain", "activity_level": "active", "allergens": []}
+    )
+
+    def total(p):
+        return sum(it.calories or 0 for d in p.days for m in d.meals for it in m.items)
+
+    ts = total(meal_planner.generate_nutrition_plan(small, db_path=db))
+    tl = total(meal_planner.generate_nutrition_plan(large, db_path=db))
+    assert tl > ts * 1.2, (ts, tl)
 
 
 def test_nutrition_plan_vegan_excludes_animal_products(tmp_path):

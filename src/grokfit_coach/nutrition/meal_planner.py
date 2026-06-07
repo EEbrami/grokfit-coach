@@ -74,6 +74,43 @@ def _portion_grams(food: FoodItem, role: str) -> float:
     return {"protein": 150.0, "carb": 110.0, "veg": 150.0}.get(role, 100.0)
 
 
+def _is_dense_choice(it: FoodChoice) -> bool:
+    """True if a chosen food is calorie-dense (kept at a small fixed portion when scaling)."""
+    return (it.calories or 0) / (it.grams or 1) * 100 >= _DENSE_KCAL
+
+
+def _day_totals(meals: list[Meal]) -> dict[str, float]:
+    tot = {"calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0}
+    for meal in meals:
+        for it in meal.items:
+            tot["calories"] += it.calories or 0
+            tot["protein_g"] += it.protein_g or 0
+            tot["carbs_g"] += it.carbs_g or 0
+            tot["fat_g"] += it.fat_g or 0
+    return tot
+
+
+def _scale_to_target(meals: list[Meal], target_cal: float) -> None:
+    """Scale 'main' (non-dense) food portions so the day's calories approach the target.
+
+    Calorie-dense extras (nuts/oils) stay at their small fixed portion. This makes plans for
+    different targets actually differ in portions/totals instead of being identical.
+    """
+    extras_cal = sum(it.calories or 0 for m in meals for it in m.items if _is_dense_choice(it))
+    mains_cal = sum(it.calories or 0 for m in meals for it in m.items if not _is_dense_choice(it))
+    if mains_cal <= 0:
+        return
+    factor = max(0.6, min(2.5, (target_cal - extras_cal) / mains_cal))
+    for meal in meals:
+        for it in meal.items:
+            if not _is_dense_choice(it):
+                it.grams = round((it.grams or 0) * factor)
+                it.calories = round((it.calories or 0) * factor)
+                it.protein_g = round((it.protein_g or 0) * factor, 1)
+                it.carbs_g = round((it.carbs_g or 0) * factor, 1)
+                it.fat_g = round((it.fat_g or 0) * factor, 1)
+
+
 def _choice(item: FoodItem, grams: float) -> FoodChoice:
     m = food_db.macros_for_grams(item, grams)
     return FoodChoice(
@@ -103,31 +140,30 @@ def generate_nutrition_plan(profile: UserProfile, db_path=None) -> NutritionPlan
     veg_fruit = veg_fruit or safe
 
     n_meals = max(1, min(profile.meals_per_day, 6))
+    # vary food selection by goal so different goals get different meals (not just portions)
+    offset = sum(ord(c) for c in (profile.goal or ""))
     meals: list[Meal] = []
     for i in range(n_meals):
         items: list[FoodChoice] = []
         used: set[str] = set()
         for role, source in (("protein", proteins), ("carb", carbs), ("veg", veg_fruit)):
-            food = _pick(source, i)
+            food = _pick(source, i + offset)
             if food and food.name not in used:
                 items.append(_choice(food, _portion_grams(food, role)))
                 used.add(food.name)
         # round out fats/flavor with a small portion of a calorie-dense food, when available
-        ex = _pick(dense, i)
+        ex = _pick(dense, i + offset)
         if ex and ex.name not in used:
             items.append(_choice(ex, _portion_grams(ex, "extra")))
             used.add(ex.name)
         if items:
             meals.append(Meal(name=_MEAL_NAMES[i] if i < len(_MEAL_NAMES) else f"Meal {i+1}", items=items))
 
+    # Scale main-food portions so the day's calories land near the personal target.
+    _scale_to_target(meals, targets.calories)
+
     # Day totals (so the user sees actual macros vs target)
-    tot = {"calories": 0.0, "protein_g": 0.0, "carbs_g": 0.0, "fat_g": 0.0}
-    for meal in meals:
-        for it in meal.items:
-            tot["calories"] += it.calories or 0
-            tot["protein_g"] += it.protein_g or 0
-            tot["carbs_g"] += it.carbs_g or 0
-            tot["fat_g"] += it.fat_g or 0
+    tot = _day_totals(meals)
 
     note = (
         f"Target ~{targets.calories} kcal (P {targets.protein_g} / C {targets.carbs_g} / F {targets.fat_g} g). "
