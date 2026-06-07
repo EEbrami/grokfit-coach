@@ -6,8 +6,15 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from .llm_config import LLMConfig
+
 Goal = Literal["fat_loss", "muscle_gain", "strength", "general_health", "endurance", "body_recomposition"]
 FitnessLevel = Literal["beginner", "novice", "intermediate", "advanced"]
+DietaryPattern = Literal[
+    "omnivore", "vegetarian", "vegan", "pescatarian", "keto", "paleo", "halal", "kosher", "other"
+]
+ActivityLevel = Literal["sedentary", "light", "moderate", "active", "very"]
+CookingEffort = Literal["minimal", "moderate", "involved"]
 
 
 class UserProfile(BaseModel):
@@ -32,12 +39,39 @@ class UserProfile(BaseModel):
         default_factory=list, description="e.g. ['knee pain', 'shoulder impingement']"
     )
 
+    # --- Nutrition personalization (Phase 3) ---
+    dietary_pattern: DietaryPattern = Field(default="omnivore", description="Overall eating pattern")
+    food_preferences: list[str] = Field(
+        default_factory=list, description="Liked foods/cuisines, used to bias suggestions"
+    )
+    disliked_foods: list[str] = Field(default_factory=list, description="Soft exclusions")
+    allergens: list[str] = Field(
+        default_factory=list,
+        description="SAFETY-CRITICAL hard exclusions, e.g. ['peanut', 'shellfish']. Never recommended.",
+    )
+    meals_per_day: int = Field(3, ge=1, le=8)
+    cooking_effort: CookingEffort = "moderate"
+    activity_level: ActivityLevel = Field(default="moderate", description="Feeds TDEE / macro targets")
+
     workout_days_per_week: int = Field(3, ge=1, le=7)
     session_duration_min: int = Field(45, ge=15, le=120)
 
+    # --- Model selection (Phase 3) ---
+    llm_config: LLMConfig = Field(default_factory=LLMConfig, description="Local-by-default LLM provider/model")
+
+    profile_version: int = Field(default=1, description="Schema version for migrations")
+
     model_config = {"extra": "ignore", "validate_default": True}
 
-    @field_validator("available_equipment", "dietary_restrictions", "injuries_or_limitations", mode="before")
+    @field_validator(
+        "available_equipment",
+        "dietary_restrictions",
+        "injuries_or_limitations",
+        "food_preferences",
+        "disliked_foods",
+        "allergens",
+        mode="before",
+    )
     @classmethod
     def _normalize_lists(cls, v):
         if v is None:

@@ -28,10 +28,17 @@ class Settings(BaseSettings):
     seeds_dir: Path = Path(__file__).resolve().parents[3] / "data" / "seeds"
     index_dir: Path = Path(__file__).resolve().parents[3] / "data" / "indexes"
 
-    # User data / persistence (Phase 2 - local JSON files)
+    # User data / persistence
+    # Phase 2 legacy JSON (kept for one-time migration into SQLite)
     user_data_dir: Path = Path.home() / ".grokfit"
     profile_path: Path = Path.home() / ".grokfit" / "profile.json"
     last_plan_path: Path = Path.home() / ".grokfit" / "last_plan.json"
+
+    # Phase 3 SQLite store (versioned profiles, append-only tracking events, timestamped plans)
+    db_path: Path = Path.home() / ".grokfit" / "grokfit.sqlite"
+
+    # Phase 3 local nutrition database (USDA FoodData Central), populated by the ingest step
+    nutrition_db_path: Path = Path(__file__).resolve().parents[3] / "data" / "nutrition" / "fdc.sqlite"
 
     model_config = SettingsConfigDict(
         env_prefix="GROKFIT_",

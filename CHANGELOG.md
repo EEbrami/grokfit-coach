@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Phase 3 roadmap** (`PHASE_3_PLAN.md`): intake-driven dual workout+nutrition coaching, open nutrition DB (USDA FoodData Central), longitudinal tracking, and multi-LLM support (local + opt-in API).
+- **GitHub Actions CI** (`.github/workflows/ci.yml`): ruff + pytest on Python 3.11/3.12 for pushes and PRs to `main`.
+- **Phase 3 / M1 — data-model spine & SQLite storage:**
+  - SQLite storage layer (`storage/db.py`): versioned `profiles`, append-only timestamped `events` log, timestamped `plans` (kind = workout/nutrition); auto-migrates legacy `profile.json`/`last_plan.json`.
+  - Expanded `UserProfile`: `dietary_pattern`, `food_preferences`, `disliked_foods`, `allergens` (safety-critical), `meals_per_day`, `cooking_effort`, `activity_level`, nested `llm_config`, `profile_version`.
+  - New models: `LLMConfig`, `NutritionPlan`/`NutritionDay`/`Meal`/`FoodChoice`/`DailyTargets`, `TrackingEvent`; extended `FoodItem` with `fdc_id`/`grams`/`diet_flags`/`allergen_flags`.
+  - `persistence.py` rewired onto SQLite (same public API → CLI/UI unchanged); added nutrition-plan save/load.
+  - Hermetic `tests/unit/test_storage.py` (versioning, events, plan round-trip, idempotent migration).
 - `"body_recomposition"` training goal option to models, macro calculation tool, and Gradio UI.
 - Unit tests verifying model validation and macro calculations for the new body recomposition goal.
 - Hermetic unit test `test_maybe_generate_plan_fallback` to verify agent's plan fallback path.
