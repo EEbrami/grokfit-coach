@@ -88,25 +88,42 @@ data/seeds/          # committed curated exercises.json, foods.json, golden set
 tests/unit/          # pytest (models, safety, rag-fakes, tools, graph)
 ```
 
-## Phase 2 Additions (Gradio UI + Persistence + Improved Plans)
-
-A clean Gradio web UI is now available on top of the Phase 1 agent:
+## Running the Terminal CLI (Phase 1 + Persistence)
 
 ```bash
-# After install
+# After `pip install -e .`
+grokfit-coach
+# or
+python -m grokfit_coach.cli
+
+# One-shot example
+grokfit-coach --query "Suggest chest exercises with dumbbells only"
+
+# With explicit profile (overrides persisted one)
+grokfit-coach --profile myprofile.json --query "create a 3 day plan"
+```
+
+The CLI automatically loads your profile from `~/.grokfit/profile.json` (or falls back to example) and auto-saves generated plans.
+
+## Running the Gradio UI (Phase 2)
+
+```bash
+# After `pip install -e .`
 grokfit-coach-ui
 # or
 python -m grokfit_coach.ui.app
 ```
 
-The UI has three tabs:
-- **Profile**: Form to view/edit your `UserProfile` (equipment, injuries, goals, etc.). Save persists locally.
-- **Coach Chat**: Real interactive chat with the local agent. Uses your saved profile automatically. All responses include safety guardrails + disclaimer.
-- **Plans**: View the last generated weekly workout plan or trigger a new one. Plans use improved Phase 2 logic (profile-aware RAG, constraint filtering, validation, and safe fallbacks).
+Then open http://127.0.0.1:7860 in your browser.
 
-**Persistence**: Profiles and last plans are saved as JSON under `~/.grokfit/` by default. The terminal CLI now loads your persisted profile by default and auto-saves generated plans (usable by the UI Plans tab).
+**UI Tabs**:
+- **Profile**: Fill the form (name, age, goal, equipment, injuries, etc.). Click "Save Profile". This persists to `~/.grokfit/profile.json` and is used by Chat and Plans.
+- **Coach Chat**: Type questions or "create a weekly plan for me". The agent uses your saved profile. All responses go through safety guardrails.
+- **Plans**: Click "Generate / Regenerate Weekly Plan" to create an improved plan using the Phase 2 logic. The last plan is also auto-loaded from persistence.
 
-The original terminal CLI (`grokfit-coach`) continues to work unchanged for headless/scripted use.
+**Persistence Sharing**: The terminal CLI and UI share the same `~/.grokfit/` JSON files. Save a profile in the UI → it appears in the CLI (and vice versa). Generated plans appear in the UI Plans tab.
+
+**Safety**: Unsafe requests (steroids, crash diets, injury advice without professionals, etc.) are blocked by guardrails before the LLM is called, in both CLI and UI. Every final response includes the standard disclaimer.
 
 ## Project Layout (key pieces)
 
@@ -140,27 +157,23 @@ Type checking: the project has `[tool.pyright]` in pyproject.toml. Run `pyright 
 
 ## Status & Limitations
 
-**Phase 1 (terminal agent) + Phase 2 (UI + persistence + better plans) complete on this branch.**
+**Current Status (feat/phase-2-ui branch)**
 
-- Working conversational agent (terminal + now Gradio UI) with RAG + tools + strong safety guardrails.
-- Improved (but still LLM-assisted) weekly workout plan generation with better context, filtering, validation and fallbacks.
-- Basic local persistence for profile and last plan (`~/.grokfit/` JSON files).
-- Gradio UI with Profile / Coach Chat / Plans tabs. Fully local.
-- Terminal CLI (`grokfit-coach`) remains fully supported and is not broken.
+Phase 1 (solid local terminal agent) + Phase 2 (Gradio UI + persistence + improved plans) are complete.
+
+- Full conversational agent (terminal CLI + Gradio UI) using RAG, tools, and strong safety guardrails.
+- Improved weekly workout plan generation with better profile awareness, filtering, validation, and fallbacks.
+- Basic but effective local persistence (`~/.grokfit/profile.json` and `last_plan.json`) shared between CLI and UI.
+- Gradio UI with Profile / Coach Chat / Plans tabs.
+- Terminal CLI (`grokfit-coach`) remains fully functional and unchanged in behavior.
 
 **Limitations**:
-- Plan quality still depends on the local LLM's ability to follow structured output and the prompt (improved but not perfect).
-- Small curated exercise set (easy to extend).
-- Persistence is simple file-based (no versioning or history beyond last plan).
-- No meal planning or advanced features yet.
+- Plan quality still depends on the capabilities of the local Ollama model (structured output + following instructions). Improved in Phase 2 but not perfect.
+- Small curated seed dataset (10 exercises / 10 foods).
+- Persistence is last-plan only (no full chat history or multiple saved plans).
+- UI is functional but basic Gradio (no advanced styling or mobile optimizations yet).
 
-- Working conversational agent in the terminal with RAG + tools + safety.
-- Basic structured weekly workout plans (intentionally kept simple).
-- Small curated seed data (easy to extend).
-- No persistence, no UI, no multi-agent, no streaming.
-- Plan quality and retrieval ranking are "good enough for a tiny curated set" — the focus was on a safe, working loop.
-
-See `PHASE_1_HANDOFF.md` for design decisions, how to extend seeds, how to call the agent from Python, and the Phase 2 roadmap.
+See `PHASE_1_HANDOFF.md` for Phase 1 details and `PHASE_2_HANDOFF.md` for Phase 2 specifics, design decisions, and next steps.
 
 ## Safety First
 

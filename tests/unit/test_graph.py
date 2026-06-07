@@ -11,7 +11,6 @@ from langchain_core.messages import AIMessage, HumanMessage
 from grokfit_coach.agents.graph import build_coach_graph
 from grokfit_coach.agents.state import AgentState
 from grokfit_coach.models import EXAMPLE_USER_PROFILE
-from grokfit_coach.safety.guardrails import apply_output_guardrails
 
 
 def test_graph_compiles():
@@ -45,4 +44,31 @@ def test_respond_node_applies_disclaimer():
     out = respond(state)
     last = out["messages"][-1].content
     assert "IMPORTANT DISCLAIMER" in last
+
+
+def test_maybe_generate_plan_fallback():
+    from unittest.mock import patch
+
+    from grokfit_coach.agents.graph import maybe_generate_plan
+    from grokfit_coach.models import Exercise, WeeklyWorkoutPlan
+
+    mock_exercises = [
+        Exercise(id="ex_1", name="Pushups", description="Push up", equipment=["none"], muscle_groups=["chest"]),
+        Exercise(id="ex_2", name="Squats", description="Squat down", equipment=["none"], muscle_groups=["legs"]),
+    ]
+
+    with patch("grokfit_coach.rag.retriever.retrieve_exercises", return_value=mock_exercises):
+        state: AgentState = {
+            "messages": [HumanMessage(content="create a weekly workout plan")],
+            "profile": EXAMPLE_USER_PROFILE,
+            "plan": None,
+            "safety_refusal": None,
+        }
+        out = maybe_generate_plan(state)
+        plan = out.get("plan")
+        assert plan is not None
+        assert isinstance(plan, WeeklyWorkoutPlan)
+        assert len(plan.days) == EXAMPLE_USER_PROFILE.workout_days_per_week
+        assert plan.athlete_name == EXAMPLE_USER_PROFILE.name
+
 

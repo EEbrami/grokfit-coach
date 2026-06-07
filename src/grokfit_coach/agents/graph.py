@@ -16,7 +16,12 @@ from langgraph.prebuilt import ToolNode
 from grokfit_coach.agents.prompts import PLAN_GENERATION_PROMPT, SYSTEM_PROMPT
 from grokfit_coach.agents.state import AgentState
 from grokfit_coach.config.settings import get_settings
-from grokfit_coach.models import UserProfile, WeeklyWorkoutPlan
+from grokfit_coach.models import (
+    ExercisePrescription,
+    UserProfile,
+    WeeklyWorkoutPlan,
+    WorkoutDay,
+)
 from grokfit_coach.safety.guardrails import (
     apply_output_guardrails,
     is_unsafe_request,
@@ -190,10 +195,21 @@ def maybe_generate_plan(state: AgentState) -> AgentState:
             if not day_exs:
                 day_exs = filtered[:per_day]
             ex_prescriptions = [
-                type("ExercisePrescription", (), {"name": ex.name, "sets": "3", "reps": "8-12", "notes": ex.cues[:60] if ex.cues else None})()
+                ExercisePrescription(
+                    name=ex.name,
+                    sets="3",
+                    reps="8-12",
+                    notes=ex.cues[:60] if ex.cues else None,
+                )
                 for ex in day_exs
             ]
-            days.append(type("WorkoutDay", (), {"day": f"Day {i+1}", "focus": "Full body / balanced", "exercises": ex_prescriptions})())
+            days.append(
+                WorkoutDay(
+                    day=f"Day {i+1}",
+                    focus="Full body / balanced",
+                    exercises=ex_prescriptions,
+                )
+            )
         plan = WeeklyWorkoutPlan(
             athlete_name=profile.name,
             goal=profile.goal,
@@ -212,7 +228,6 @@ def maybe_generate_plan(state: AgentState) -> AgentState:
 
 def respond(state: AgentState) -> AgentState:
     """Final response node. Applies output guardrails (disclaimer)."""
-    from grokfit_coach.safety.guardrails import apply_output_guardrails
 
     if state.get("safety_refusal"):
         refusal = state["safety_refusal"]

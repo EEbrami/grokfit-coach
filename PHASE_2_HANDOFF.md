@@ -53,36 +53,56 @@
 - This `PHASE_2_HANDOFF.md`.
 - (CHANGELOG would be updated in a real commit.)
 
-## How to Run Phase 2 (Terminal + UI)
+## How to Run the Terminal CLI and the UI
 
+**Prerequisites (same for both):**
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
-# Terminal 1
+# Terminal 1 (background)
 ollama serve
 
 # Terminal 2
 ollama pull llama3.1
-python -m grokfit_coach.rag.ingest
+python -m grokfit_coach.rag.ingest   # one-time (or after changing seeds)
+```
 
-# Terminal CLI (unchanged experience)
+**Terminal CLI (unchanged from Phase 1, now with persistence):**
+```bash
 grokfit-coach
-# or with explicit profile override
-grokfit-coach --profile some.json --query "create a plan"
+# or
+python -m grokfit_coach.cli
 
-# New Gradio UI
+# One-shot
+grokfit-coach --query "good beginner dumbbell chest exercises"
+
+# With explicit profile (overrides persisted ~/.grokfit/profile.json)
+grokfit-coach --profile myprofile.json --query "create a 3 day plan"
+```
+
+The CLI auto-loads from `~/.grokfit/profile.json` and auto-saves generated plans.
+
+**Gradio UI (new in Phase 2):**
+```bash
 grokfit-coach-ui
 # or
 python -m grokfit_coach.ui.app
 ```
 
-In the UI:
-1. Go to **Profile** tab → adjust fields (or Load Saved) → Save.
-2. Go to **Coach Chat** → talk naturally (including "make me a plan..."). Your saved profile is used.
-3. Go to **Plans** tab → Generate. Improved plans appear (better constraint adherence + fallback).
+Then open http://127.0.0.1:7860.
 
-Unsafe requests are still refused before reaching the LLM in both interfaces.
+**UI Usage:**
+1. **Profile tab**: Fill/edit the form (including equipment, injuries, goals). Click **Save Profile**. This writes to `~/.grokfit/profile.json`.
+2. **Coach Chat tab**: Chat naturally. The agent automatically uses your saved/persisted profile. Try "create a weekly plan...".
+3. **Plans tab**: Click **Generate / Regenerate Weekly Plan**. Uses the improved Phase 2 plan logic. Last plan auto-loads from persistence.
+
+**Persistence Sharing (CLI ↔ UI):**
+- Both use the exact same `~/.grokfit/profile.json` and `last_plan.json`.
+- Save profile in UI → it is used the next time you run the CLI.
+- Generate a plan in CLI → it appears in the UI Plans tab on next load.
+
+Unsafe requests are refused by guardrails in **both** the terminal CLI and the UI (before the LLM is called). All final outputs include the disclaimer.
 
 ## Design Decisions & Trade-offs
 
@@ -102,26 +122,28 @@ Unsafe requests are still refused before reaching the LLM in both interfaces.
 
 Full end-to-end UI usage (browser) requires `pip install -e .` + `grokfit-coach-ui` on a machine with a display (or headless Gradio testing).
 
-## Limitations of Phase 2
-- Plan quality is improved but still ultimately depends on the local LLM's structured-output reliability and prompt following.
-- UI is functional Gradio (not heavily styled or mobile-optimized).
-- Persistence is last-plan only (no full history or multiple saved plans).
-- Profile form in UI uses simple comma-separated text for lists (works because of the existing validator, but could be multi-select in future).
-- No meal-plan UI or deeper nutrition features.
+## Known Limitations
+- Plan quality is improved (better filtering, richer prompts, validation + fallback) but still depends on the local Ollama model's ability to reliably do structured output and follow complex instructions.
+- The seed dataset is small and curated (10 exercises, 10 foods). Retrieval quality and plan variety are limited by this.
+- Persistence is deliberately simple (last profile + last plan only). No chat history, no multiple named profiles, no versioning.
+- UI is basic but fully functional Gradio. No custom CSS, limited mobile experience, no rich visualizations (charts, calendars, etc.).
+- No meal plans or deeper nutrition planning UI.
+- Real end-to-end testing with Ollama requires the model to be running and good at tool calling/structured output (llama3.1 recommended).
 
-## Next Steps / Phase 3 Ideas
-- Better / more reliable plan generation (tool-augmented planning, more RAG context, few-shot examples in structured calls, or a dedicated planning tool that the ReAct loop can use iteratively).
-- Expand seeds or add hybrid retrieval.
-- Richer UI (better plan visualization, history, export to markdown/PDF, macro charts).
-- Optional streaming in chat (if Ollama + LangChain client supports it well).
-- Multi-agent skeleton (e.g. separate planner vs. Q&A specialist nodes behind the same graph entrypoint).
-- More tests: Gradio component tests, real-Ollama integration tests (marked), plan quality regression suite.
-- Persistence versioning or multiple named profiles.
+## Suggested Next Steps (Phase 3+ Ideas)
+- More robust plan generation: turn planning into a proper tool that the ReAct agent can call iteratively, with better RAG context (full exercise objects, contraindications), few-shot examples, and multi-step refinement.
+- Expand RAG: larger curated seeds or instructions for importing USDA data; hybrid search; metadata filtering inside the vector store.
+- Richer persistence: full chat history, multiple saved profiles/plans, simple export.
+- UI enhancements: better plan visualization (tables, muscle group heatmaps), history sidebar, one-click "use this plan in chat", macro pie charts, export to Markdown/PDF.
+- Streaming responses in chat (when supported by the Ollama + LangChain stack).
+- Multi-agent foundation: extract planning, nutrition advice, and general Q&A into specialist nodes behind the existing graph.
+- Testing: Gradio-specific tests, end-to-end flows with a running Ollama, plan quality regression tests against golden profiles.
+- Optional: TUI alternative, voice input (local), or integration with local calendar/todo apps.
 
 ## Final Notes
-Phase 1 gave us a trustworthy, safe, local core agent + CLI.  
-Phase 2 wrapped it in a convenient UI, added the persistence users expect, and made the plans noticeably better without sacrificing the foundation or the terminal experience.
+Phase 1 delivered a trustworthy, safe, local core (agent + RAG + tools + CLI + guardrails).  
+Phase 2 successfully wrapped it with a convenient Gradio UI, added the expected local persistence, and made plan generation noticeably better — all while keeping the terminal CLI fully intact and everything 100% private/local.
 
-The branch `feat/phase-2-ui` is ready for review/merge into the Phase 1 branch (or main later per the overall strategy).
+The implementation on `feat/phase-2-ui` is ready for review. No changes were made to `main`. 
 
-All work remains 100% local and private.
+All work remains strictly local with Ollama. Safety guardrails are active in both interfaces. Persistence is shared cleanly between CLI and UI.

@@ -8,11 +8,11 @@ from pydantic import ValidationError
 from grokfit_coach.models import (
     EXAMPLE_USER_PROFILE,
     Exercise,
+    ExercisePrescription,
     FoodItem,
     UserProfile,
     WeeklyWorkoutPlan,
     WorkoutDay,
-    ExercisePrescription,
 )
 
 

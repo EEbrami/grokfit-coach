@@ -17,7 +17,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 
-from grokfit_coach.config.settings import get_settings, ensure_data_dirs
+from grokfit_coach.config.settings import ensure_data_dirs, get_settings
 from grokfit_coach.models import Exercise, FoodItem
 
 

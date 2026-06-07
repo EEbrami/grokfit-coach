@@ -11,7 +11,6 @@ from grokfit_coach.models.nutrition import FoodItem
 def _load_foods() -> list[FoodItem]:
     # Lazy load to avoid import-time side effects
     import json
-    from pathlib import Path
 
     s = get_settings()
     path = s.seeds_dir / "foods.json"

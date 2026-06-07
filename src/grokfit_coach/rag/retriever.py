@@ -8,8 +8,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import Any
 
-from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
 
 from grokfit_coach.config.settings import get_settings
 from grokfit_coach.models import Exercise

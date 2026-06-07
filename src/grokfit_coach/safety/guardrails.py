@@ -10,7 +10,6 @@ These are intentionally simple and deterministic for Phase 1 (no LLM trust for s
 from __future__ import annotations
 
 import re
-from typing import Optional
 
 DISCLAIMER: str = (
     "IMPORTANT DISCLAIMER: This is general educational information only and is NOT a "
@@ -31,7 +30,7 @@ _UNSAFE_PATTERNS: list[re.Pattern[str]] = [
 ]
 
 
-def is_unsafe_request(text: str) -> Optional[str]:
+def is_unsafe_request(text: str) -> str | None:
     """Return a short reason if the request looks unsafe, otherwise None."""
     if not text or not text.strip():
         return None

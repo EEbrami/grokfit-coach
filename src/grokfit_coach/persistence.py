@@ -8,9 +8,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
 
-from grokfit_coach.config.settings import get_settings, ensure_user_data_dirs
+from grokfit_coach.config.settings import ensure_user_data_dirs, get_settings
 from grokfit_coach.models import EXAMPLE_USER_PROFILE, UserProfile, WeeklyWorkoutPlan
 
 
@@ -50,7 +49,7 @@ def save_plan(plan: WeeklyWorkoutPlan) -> Path:
     return path
 
 
-def load_plan() -> Optional[WeeklyWorkoutPlan]:
+def load_plan() -> WeeklyWorkoutPlan | None:
     """Load the last saved plan if present and valid; otherwise None."""
     settings = get_settings()
     path = settings.last_plan_path

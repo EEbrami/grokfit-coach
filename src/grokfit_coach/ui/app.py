@@ -222,9 +222,9 @@ def launch():
 
         with gr.Tab("Coach Chat"):
             gr.Markdown("### Chat with the Local Agent\nYour current profile (from Profile tab or persisted) is used automatically. Safety guardrails are always active.")
-            chatbot = gr.Chatbot(height=400, type="messages")
+            chatbot = gr.Chatbot(height=400)
             msg = gr.Textbox(placeholder="Ask about exercises, nutrition, or say 'create a 4-day plan for fat loss with dumbbells'", label="Your message")
-            clear = gr.ClearButton([chatbot, msg])
+            gr.ClearButton([chatbot, msg])
 
             def _submit_and_update(message, history, pstate):
                 new_hist, _ = chat_response(message, history, pstate)

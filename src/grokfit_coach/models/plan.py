@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-
 # Basic disclaimer used by plans (will be aligned with safety/guardrails in later steps)
 DEFAULT_DISCLAIMER: str = (
     "IMPORTANT DISCLAIMER: This is general educational information only and is NOT a "
