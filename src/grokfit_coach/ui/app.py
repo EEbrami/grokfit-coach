@@ -426,7 +426,16 @@ def launch():
 
         gr.Markdown("---\n*Everything runs locally with Ollama. Your data never leaves your machine.*")
 
-    demo.launch(server_name="127.0.0.1", server_port=7860, share=False, inbrowser=False)
+    from grokfit_coach.config.settings import get_settings
+
+    # allow Gradio to serve the downloadable .md exports we write under ~/.grokfit/
+    demo.launch(
+        server_name="127.0.0.1",
+        server_port=7860,
+        share=False,
+        inbrowser=False,
+        allowed_paths=[str(get_settings().user_data_dir)],
+    )
 
 
 if __name__ == "__main__":
