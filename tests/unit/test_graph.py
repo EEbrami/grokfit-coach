@@ -46,6 +46,37 @@ def test_respond_node_applies_disclaimer():
     assert "IMPORTANT DISCLAIMER" in last
 
 
+def test_maybe_generate_plan_fills_all_days(monkeypatch):
+    """Every requested day must be present and filled (>=4 exercises), even with no LLM."""
+    from grokfit_coach.agents import graph
+    from grokfit_coach.models import EXAMPLE_USER_PROFILE, Exercise
+
+    pool = [
+        Exercise(id=f"ex_{i}", name=f"Move {i}", description="bodyweight move", equipment=["none"], muscle_groups=["full"])
+        for i in range(8)
+    ]
+
+    def _boom(*a, **k):
+        raise RuntimeError("no llm in test")
+
+    monkeypatch.setattr("grokfit_coach.rag.retriever.retrieve_exercises", lambda *a, **k: pool)
+    monkeypatch.setattr(graph, "get_chat_model", _boom)  # force the deterministic assembly path
+
+    profile = EXAMPLE_USER_PROFILE.model_copy(update={"workout_days_per_week": 4})
+    state: AgentState = {
+        "messages": [HumanMessage(content="create a weekly workout plan")],
+        "profile": profile,
+        "plan": None,
+        "safety_refusal": None,
+    }
+    out = graph.maybe_generate_plan(state)
+    plan = out["plan"]
+    assert plan is not None
+    assert len(plan.days) == 4
+    assert all(len(d.exercises) >= 4 for d in plan.days)
+    assert all(ex.sets and ex.reps for d in plan.days for ex in d.exercises)
+
+
 def test_maybe_generate_plan_fallback():
     from unittest.mock import patch
 

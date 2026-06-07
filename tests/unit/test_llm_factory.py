@@ -72,6 +72,20 @@ def test_get_chat_model_none_profile_is_local():
     assert isinstance(llm, ChatOllama)
 
 
+def test_ensure_local_available_falls_back_to_installed(monkeypatch):
+    monkeypatch.setattr(factory, "installed_ollama_models", lambda *a, **k: ["llama3.1:latest"])
+    # requested model not installed -> fall back to an installed, tool-reliable model
+    assert factory.ensure_local_available("qwen2.5") == "llama3.1"
+    # installed model is returned unchanged
+    assert factory.ensure_local_available("llama3.1") == "llama3.1"
+
+
+def test_ensure_local_available_passthrough_when_ollama_down(monkeypatch):
+    monkeypatch.setattr(factory, "installed_ollama_models", lambda *a, **k: [])
+    # can't verify -> return the request unchanged (let it try / fail at invoke)
+    assert factory.ensure_local_available("qwen3.5") == "qwen3.5"
+
+
 def test_get_chat_model_cloud_without_key_raises(monkeypatch):
     monkeypatch.delenv("GROKFIT_MISSING_OPENAI", raising=False)
     profile = EXAMPLE_USER_PROFILE.model_copy(
