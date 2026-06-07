@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Hermetic unit test `test_maybe_generate_plan_fallback` to verify agent's plan fallback path.
+
+### Fixed
+- Pydantic ValidationError in agent fallback path (`maybe_generate_plan`) by importing and using actual `WorkoutDay` and `ExercisePrescription` models instead of dynamic classes constructed with `type()`.
+- Gradio UI Chatbot crash by removing `type="messages"` from `gr.Chatbot` to match callback history's tuple format.
+- Cleaned up Ruff linting errors (unused imports, sorting, unused variables) across the package.
+
 - Phase 1 foundation: full Pydantic v2 models (UserProfile + Exercise + FoodItem + WeeklyWorkoutPlan), local FAISS RAG over curated seeds, 3 LangChain tools, single LangGraph coach agent with explicit safety nodes, thin terminal CLI (REPL + one-shot).
 - Comprehensive pytest suite (models, safety/guardrails, RAG with fakes, tools, graph) + retrieval_eval script.
 - Strong rule-based guardrails (pre-filter + forced disclaimer on every output) + tests that attempt unsafe requests.
