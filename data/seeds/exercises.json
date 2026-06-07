@@ -1,0 +1,102 @@
+[
+  {
+    "id": "ex_001",
+    "name": "Push-up",
+    "description": "Classic bodyweight push-up for chest, shoulders and triceps.",
+    "muscle_groups": ["chest", "shoulders", "triceps"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": ["wrist pain", "shoulder impingement"],
+    "cues": "Keep body straight, core braced, lower chest to floor."
+  },
+  {
+    "id": "ex_002",
+    "name": "Goblet Squat",
+    "description": "Squat holding a dumbbell at chest level. Great for beginners learning squat pattern.",
+    "muscle_groups": ["quads", "glutes", "core"],
+    "equipment": ["dumbbells"],
+    "difficulty": "beginner",
+    "contraindications": ["knee pain"],
+    "cues": "Elbows inside knees, chest up, sit back."
+  },
+  {
+    "id": "ex_003",
+    "name": "Dumbbell Bench Press",
+    "description": "Lying dumbbell press targeting chest and triceps.",
+    "muscle_groups": ["chest", "triceps", "shoulders"],
+    "equipment": ["dumbbells", "bench"],
+    "difficulty": "novice",
+    "contraindications": ["shoulder pain"],
+    "cues": "Wrists stacked over elbows, full range, controlled descent."
+  },
+  {
+    "id": "ex_004",
+    "name": "One-Arm Dumbbell Row",
+    "description": "Bent-over single arm row for upper back and lats.",
+    "muscle_groups": ["back", "lats", "biceps"],
+    "equipment": ["dumbbells"],
+    "difficulty": "beginner",
+    "contraindications": ["lower back pain"],
+    "cues": "Hinge at hips, pull elbow back, squeeze shoulder blade."
+  },
+  {
+    "id": "ex_005",
+    "name": "Dumbbell Overhead Press",
+    "description": "Standing or seated press overhead for shoulders and triceps.",
+    "muscle_groups": ["shoulders", "triceps"],
+    "equipment": ["dumbbells"],
+    "difficulty": "novice",
+    "contraindications": ["shoulder impingement"],
+    "cues": "Core tight, no excessive arch, press to lockout."
+  },
+  {
+    "id": "ex_006",
+    "name": "Dumbbell Romanian Deadlift",
+    "description": "Hip hinge movement targeting hamstrings and glutes.",
+    "muscle_groups": ["hamstrings", "glutes", "lower back"],
+    "equipment": ["dumbbells"],
+    "difficulty": "novice",
+    "contraindications": ["lower back pain", "hamstring strain"],
+    "cues": "Soft knees, hinge at hips, flat back, feel stretch in hamstrings."
+  },
+  {
+    "id": "ex_007",
+    "name": "Resistance Band Face Pull",
+    "description": "Band pull to face for rear delts and upper back posture.",
+    "muscle_groups": ["rear delts", "upper back"],
+    "equipment": ["resistance_bands"],
+    "difficulty": "beginner",
+    "contraindications": [],
+    "cues": "Elbows high, externally rotate at end, squeeze shoulder blades."
+  },
+  {
+    "id": "ex_008",
+    "name": "Plank",
+    "description": "Isometric core hold.",
+    "muscle_groups": ["core", "shoulders"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": ["wrist pain"],
+    "cues": "Body straight from head to heels, squeeze glutes and abs."
+  },
+  {
+    "id": "ex_009",
+    "name": "Glute Bridge",
+    "description": "Lying hip extension for glutes and hamstrings.",
+    "muscle_groups": ["glutes", "hamstrings"],
+    "equipment": ["none", "bodyweight"],
+    "difficulty": "beginner",
+    "contraindications": [],
+    "cues": "Drive through heels, squeeze glutes at top, 2 sec hold."
+  },
+  {
+    "id": "ex_010",
+    "name": "Bulgarian Split Squat",
+    "description": "Rear-foot elevated split squat. Excellent unilateral leg strength.",
+    "muscle_groups": ["quads", "glutes"],
+    "equipment": ["dumbbells", "bench"],
+    "difficulty": "intermediate",
+    "contraindications": ["knee pain"],
+    "cues": "Front knee tracks over ankle, upright torso, controlled depth."
+  }
+]

@@ -32,14 +32,16 @@ chroma_db/
 faiss_index/
 lancedb/
 
-# data/ : allow committed seed data for RAG, ignore generated indexes/artifacts
-data/
+# data/ : ignore generated indexes/artifacts but KEEP committed seed data for RAG.
+# Use data/* (not data/) so children can be re-included; a bare data/ excludes the
+# directory itself and makes negations impossible.
+data/*
 !data/seeds/
-!data/seeds/**/*
 .artifacts/
 var/
 indexes/
 data/indexes/
+data/nutrition/
 *.faiss
 *.pkl  # often used by FAISS + docstore sidecars
 
